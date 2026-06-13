@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+
+<meta charset="UTF-8">
+
+<title>Perfil</title>
+
+<link rel="stylesheet"
+href="{{ url_for('static', filename='css/style.css') }}">
+
+</head>
+
+<body>
+
+<div class="main-content">
+
+<h1>{{ usuario[1] }}</h1>
+
+<div class="perfil-card">
+
+<p><strong>RGPM:</strong> {{ usuario[2] }}</p>
+
+<p><strong>Discord:</strong> {{ usuario[3] }}</p>
+
+<p><strong>Patente:</strong> {{ usuario[4] }}</p>
+
+</div>
+
+<h2>Advertências</h2>
+
+<table class="tabela">
+
+<tr>
+<th>Motivo</th>
+<th>Aplicador</th>
+<th>Data</th>
+</tr>
+
+{% for a in advertencias %}
+
+<tr>
+
+<td>{{ a[2] }}</td>
+<td>{{ a[3] }}</td>
+<td>{{ a[4] }}</td>
+
+</tr>
+
+{% endfor %}
+
+</table>
+
+<h2>Certificados</h2>
+
+<table class="tabela">
+
+<tr>
+<th>Curso</th>
+<th>Assinatura</th>
+<th>Data</th>
+</tr>
+
+{% for c in certificados %}
+
+<tr>
+
+<td>{{ c[2] }}</td>
+<td>{{ c[3] }}</td>
+<td>{{ c[4] }}</td>
+
+</tr>
+
+{% endfor %}
+
+</table>
+
+</div>
+
+</body>
+</html>

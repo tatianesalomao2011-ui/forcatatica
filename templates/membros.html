@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Membros</title>
+
+<link rel="stylesheet"
+href="{{ url_for('static', filename='css/style.css') }}">
+
+</head>
+
+<body>
+
+<div class="sidebar">
+
+    <div class="sidebar-header">
+        <h2>FORÇA TÁTICA</h2>
+    </div>
+
+    <ul>
+
+        <li><a href="/dashboard">Dashboard</a></li>
+
+        <li><a href="/membros">Membros</a></li>
+
+        <li><a href="/advertencias">Advertências</a></li>
+
+        <li><a href="/certificados">Certificados</a></li>
+
+        <li><a href="/cursos">Cursos</a></li>
+
+        <li><a href="/pendentes">Pendentes</a></li>
+
+        <li><a href="/logout">Sair</a></li>
+
+    </ul>
+
+</div>
+
+<div class="main-content">
+
+<h1>Gerenciamento de Membros</h1>
+
+<table class="tabela">
+
+<thead>
+
+<tr>
+
+<th>ID</th>
+<th>Nome</th>
+<th>RGPM</th>
+<th>Discord</th>
+<th>Patente</th>
+<th>Ações</th>
+
+</tr>
+
+</thead>
+
+<tbody>
+
+{% for usuario in usuarios %}
+
+<tr>
+
+<td>{{ usuario[0] }}</td>
+<td>{{ usuario[1] }}</td>
+<td>{{ usuario[2] }}</td>
+<td>{{ usuario[3] }}</td>
+<td>{{ usuario[4] }}</td>
+
+<td>
+
+<a href="/perfil/{{ usuario[0] }}"
+class="btn-ver">
+
+Abrir
+
+</a>
+
+</td>
+
+</tr>
+
+{% endfor %}
+
+</tbody>
+
+</table>
+
+</div>
+
+</body>
+</html>

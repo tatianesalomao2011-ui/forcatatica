@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Criar Curso</title>
+
+<link rel="stylesheet"
+href="{{ url_for('static', filename='css/style.css') }}">
+
+</head>
+
+<body>
+
+<div class="main-content">
+
+<h1>Criar Novo Curso</h1>
+
+<form action="/criar_curso" method="POST">
+
+<div class="form-card">
+
+<label>Nome do Curso</label>
+<input type="text" name="nome" required>
+
+<label>Descrição</label>
+<textarea name="descricao" required></textarea>
+
+<label>Data Início</label>
+<input type="date" name="inicio" required>
+
+<label>Data Fim</label>
+<input type="date" name="fim" required>
+
+<button class="btn-aprovar" type="submit">
+
+Criar Curso
+
+</button>
+
+</div>
+
+</form>
+
+</div>
+
+</body>
+</html>

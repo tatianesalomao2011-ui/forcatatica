@@ -1,0 +1,392 @@
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:'Poppins',sans-serif;
+}
+
+body{
+    min-height:100vh;
+    background:url("../img/background.jpg");
+    background-size:cover;
+    background-position:center;
+}
+
+.background-overlay{
+    position:fixed;
+    inset:0;
+    background:rgba(0,0,0,.75);
+}
+
+.login-container,
+.register-container{
+    width:100%;
+    height:100vh;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    position:relative;
+    z-index:2;
+}
+
+.login-card,
+.register-card{
+
+    width:500px;
+
+    background:#111827;
+
+    border-radius:15px;
+
+    padding:40px;
+
+    color:white;
+
+    box-shadow:
+    0 0 30px rgba(0,0,0,.5);
+
+}
+
+.logo-area{
+    text-align:center;
+    margin-bottom:30px;
+}
+
+.logo-area h1{
+    font-size:28px;
+    color:#facc15;
+}
+
+.logo-area p{
+    margin-top:10px;
+}
+
+.input-group{
+    display:flex;
+    flex-direction:column;
+    margin-bottom:20px;
+}
+
+.input-group label{
+    margin-bottom:8px;
+}
+
+.input-group input,
+.input-group select{
+
+    padding:12px;
+
+    border:none;
+
+    border-radius:8px;
+
+}
+
+.btn-login{
+
+    width:100%;
+
+    padding:15px;
+
+    background:#facc15;
+
+    border:none;
+
+    border-radius:10px;
+
+    cursor:pointer;
+
+    font-weight:700;
+
+}
+
+.btn-login:hover{
+
+    opacity:.9;
+
+}
+
+.register-area{
+    text-align:center;
+    margin-top:20px;
+}
+
+.register-area a{
+    color:#facc15;
+    text-decoration:none;
+}
+
+.voltar-link{
+    display:block;
+    text-align:center;
+    margin-top:20px;
+    color:#facc15;
+}
+
+.alert-box{
+
+    background:#991b1b;
+
+    padding:15px;
+
+    border-radius:8px;
+
+    margin-bottom:20px;
+
+}
+
+.sidebar{
+
+    width:260px;
+
+    height:100vh;
+
+    position:fixed;
+
+    background:#0f172a;
+
+    color:white;
+
+}
+
+.sidebar-header{
+
+    padding:30px;
+
+    text-align:center;
+
+}
+
+.sidebar ul{
+
+    list-style:none;
+
+}
+
+.sidebar li{
+
+    border-bottom:1px solid #1e293b;
+
+}
+
+.sidebar a{
+
+    color:white;
+
+    text-decoration:none;
+
+    display:block;
+
+    padding:18px;
+
+}
+
+.sidebar a:hover{
+
+    background:#facc15;
+
+    color:black;
+
+}
+
+.main-content{
+
+    margin-left:260px;
+
+    padding:40px;
+
+}
+
+.header{
+
+    margin-bottom:30px;
+
+}
+
+.dashboard-grid{
+
+    display:grid;
+
+    grid-template-columns:
+    repeat(auto-fit,minmax(250px,1fr));
+
+    gap:20px;
+
+}
+
+.card{
+
+    background:#111827;
+
+    color:white;
+
+    padding:30px;
+
+    border-radius:15px;
+
+}
+
+.tabela{
+
+    width:100%;
+
+    margin-top:20px;
+
+    border-collapse:collapse;
+
+    background:white;
+
+}
+
+.tabela th{
+
+    background:#0f172a;
+
+    color:white;
+
+    padding:15px;
+
+}
+
+.tabela td{
+
+    padding:15px;
+
+    border:1px solid #ddd;
+
+}
+
+.btn-aprovar{
+
+    background:#15803d;
+
+    color:white;
+
+    border:none;
+
+    padding:10px 15px;
+
+    border-radius:8px;
+
+    cursor:pointer;
+
+}
+
+.btn-recusar{
+
+    background:#b91c1c;
+
+    color:white;
+
+    border:none;
+
+    padding:10px 15px;
+
+    border-radius:8px;
+
+    cursor:pointer;
+
+}
+
+.tabela input{
+
+    padding:8px;
+
+    margin-right:10px;
+
+}
+
+.btn-ver{
+
+    background:#facc15;
+
+    color:black;
+
+    text-decoration:none;
+
+    padding:10px 15px;
+
+    border-radius:8px;
+
+    font-weight:600;
+
+}
+
+.perfil-card{
+
+    background:white;
+
+    padding:25px;
+
+    border-radius:10px;
+
+    margin-bottom:30px;
+
+}
+
+.perfil-card p{
+
+    margin-bottom:10px;
+
+}
+
+.form-card{
+
+    background:white;
+
+    padding:25px;
+
+    border-radius:10px;
+
+    margin-bottom:30px;
+
+}
+
+.form-card label{
+
+    display:block;
+
+    margin-top:15px;
+
+    margin-bottom:8px;
+
+    font-weight:600;
+
+}
+
+.form-card select,
+.form-card textarea,
+.form-card input{
+
+    width:100%;
+
+    padding:12px;
+
+    border:1px solid #d1d5db;
+
+    border-radius:8px;
+
+}
+
+.form-card textarea{
+
+    min-height:120px;
+
+    resize:vertical;
+
+}
+
+.form-card button{
+
+    margin-top:20px;
+
+}
+
+.card p{
+    margin-top:10px;
+    color:#d1d5db;
+}
+
+.card h2{
+    color:#facc15;
+}

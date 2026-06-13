@@ -1,0 +1,33 @@
+@app.route("/certificados")
+def certificados():
+
+    conn = conectar()
+    cur = conn.cursor()
+
+    cur.execute("""
+    SELECT *
+    FROM usuarios
+    WHERE status='APROVADO'
+    """)
+
+    usuarios = cur.fetchall()
+
+    cur.execute("""
+    SELECT
+        certificados.*,
+        usuarios.nome
+    FROM certificados
+    INNER JOIN usuarios
+    ON usuarios.id = certificados.usuario_id
+    ORDER BY certificados.id DESC
+    """)
+
+    lista = cur.fetchall()
+
+    conn.close()
+
+    return render_template(
+        "certificados.html",
+        usuarios=usuarios,
+        certificados=lista
+    )
