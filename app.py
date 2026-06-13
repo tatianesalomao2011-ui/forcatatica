@@ -82,6 +82,10 @@ def criar_banco():
     conn.close()
 
 
+os.makedirs("database", exist_ok=True)
+criar_banco()
+
+
 # =========================
 # PERMISSÕES
 # =========================
@@ -573,15 +577,3 @@ def encerrar_curso(id):
     conn.close()
 
     return redirect("/cursos")
-
-
-# =========================
-# START
-# =========================
-if __name__ == "__main__":
-
-    os.makedirs("database", exist_ok=True)
-
-    criar_banco()
-
-    app.run(host="0.0.0.0", port=5000, debug=False)
