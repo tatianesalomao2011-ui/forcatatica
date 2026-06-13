@@ -35,7 +35,7 @@ def criar_banco():
         discord_id TEXT UNIQUE,
         patente TEXT,
         senha TEXT,
-        status TEXT DEFAULT 'APROVADO', -- Mudou aqui!
+        status TEXT DEFAULT 'PENDENTE',
         observacao TEXT DEFAULT ''
     )
     """)
