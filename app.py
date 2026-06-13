@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, session, flash, url_for
+from flask import Flask, render_template, request, redirect, session, flash
 from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import datetime
 import sqlite3
@@ -35,7 +35,7 @@ def criar_banco():
         discord_id TEXT UNIQUE,
         patente TEXT,
         senha TEXT,
-        status TEXT DEFAULT 'PENDENTE',
+        status TEXT DEFAULT 'APROVADO', -- Mudou aqui!
         observacao TEXT DEFAULT ''
     )
     """)
@@ -86,10 +86,6 @@ def criar_banco():
     conn.commit()
     conn.close()
 
-# ISSO GARANTE QUE O BANCO VAI SER CRIADO NO RAILWAY MESMO USANDO GUNICORN
-with app.app_context():
-    criar_banco()
-
 
 # =========================
 # PERMISSÕES E AUXILIARES
@@ -108,15 +104,17 @@ def get_user():
 
 def is_admin():
     user = get_user()
-    if not user or len(user) < 5:
+    if not user:
         return False
+    # user[4] corresponde à coluna 'patente'
     return user[4] in ["Coronel", "Tenente Coronel", "Major"]
 
 
 def is_approved():
     user = get_user()
-    if not user or len(user) < 7:
+    if not user:
         return False
+    # user[6] corresponde à coluna 'status'
     return user[6] == "APROVADO"
 
 
@@ -130,10 +128,7 @@ def login():
 
 @app.route("/registro")
 def registro():
-    try:
-        from config import PATENTES
-    except ImportError:
-        PATENTES = ["Soldado", "Cabo", "Sargento", "Subtenente", "Tenente", "Capitão", "Major", "Tenente Coronel", "Coronel"]
+    from config import PATENTES
     return render_template("registro.html", patentes=PATENTES)
 
 
@@ -146,6 +141,7 @@ def registrar():
     senha = request.form["senha"]
     confirmar = request.form["confirmar"]
 
+    # Verifica se as senhas batem
     if senha != confirmar:
         return "Erro: A senha e a confirmação de senha não são iguais!", 400
 
@@ -166,7 +162,7 @@ def registrar():
     finally:
         conn.close()
 
-    return redirect(url_for("login"))
+    return redirect("/")
 
 
 @app.route("/entrar", methods=["POST"])
@@ -185,27 +181,27 @@ def entrar():
 
     if not user:
         flash("Usuário, RGPM ou Discord ID não encontrado.")
-        return redirect(url_for("login"))
+        return redirect("/")
 
     if user[6] != "APROVADO":
         if user[6] == "RECUSADO":
             flash(f"Seu cadastro foi recusado. Motivo: {user[7]}")
         else:
             flash("Seu cadastro ainda está PENDENTE de aprovação pela administração.")
-        return redirect(url_for("login"))
+        return redirect("/")
 
     if not check_password_hash(user[5], senha):
         flash("Senha incorreta.")
-        return redirect(url_for("login"))
+        return redirect("/")
 
     session["usuario"] = user[1]
-    return redirect(url_for("dashboard"))
+    return redirect("/dashboard")
 
 
 @app.route("/logout")
 def logout():
     session.clear()
-    return redirect(url_for("login"))
+    return redirect("/")
 
 
 # =========================
@@ -214,7 +210,7 @@ def logout():
 @app.route("/dashboard")
 def dashboard():
     if not is_approved():
-        return redirect(url_for("login"))
+        return redirect("/")
 
     conn = conectar()
     cur = conn.cursor()
@@ -244,7 +240,7 @@ def dashboard():
 @app.route("/pendentes")
 def pendentes():
     if not is_approved():
-        return redirect(url_for("login"))
+        return redirect("/")
 
     conn = conectar()
     cur = conn.cursor()
@@ -258,7 +254,7 @@ def pendentes():
 @app.route("/aprovar/<int:id>", methods=["POST"])
 def aprovar(id):
     if not is_approved():
-        return redirect(url_for("login"))
+        return redirect("/")
 
     conn = conectar()
     cur = conn.cursor()
@@ -266,13 +262,13 @@ def aprovar(id):
     conn.commit()
     conn.close()
 
-    return redirect(url_for("pendentes"))
+    return redirect("/pendentes")
 
 
 @app.route("/recusar/<int:id>", methods=["POST"])
 def recusar(id):
     if not is_approved():
-        return redirect(url_for("login"))
+        return redirect("/")
 
     obs = request.form["observacao"]
 
@@ -282,7 +278,7 @@ def recusar(id):
     conn.commit()
     conn.close()
 
-    return redirect(url_for("pendentes"))
+    return redirect("/pendentes")
 
 
 # =========================
@@ -291,7 +287,7 @@ def recusar(id):
 @app.route("/membros")
 def membros():
     if not is_approved():
-        return redirect(url_for("login"))
+        return redirect("/")
 
     conn = conectar()
     cur = conn.cursor()
@@ -305,7 +301,7 @@ def membros():
 @app.route("/perfil/<int:id>")
 def perfil(id):
     if not is_approved():
-        return redirect(url_for("login"))
+        return redirect("/")
 
     conn = conectar()
     cur = conn.cursor()
@@ -335,7 +331,7 @@ def perfil(id):
 @app.route("/advertencias")
 def advertencias():
     if not is_approved():
-        return redirect(url_for("login"))
+        return redirect("/")
 
     conn = conectar()
     cur = conn.cursor()
@@ -362,11 +358,11 @@ def advertencias():
 @app.route("/aplicar_advertencia", methods=["POST"])
 def aplicar_advertencia():
     if not is_approved():
-        return redirect(url_for("login"))
+        return redirect("/")
 
     usuario_id = request.form["usuario_id"]
     motivo = request.form["motivo"]
-    aplicador = session.get("usuario", "Desconhecido")
+    aplicador = session["usuario"]
     data = datetime.now().strftime("%d/%m/%Y %H:%M")
 
     conn = conectar()
@@ -378,13 +374,13 @@ def aplicar_advertencia():
     conn.commit()
     conn.close()
 
-    return redirect(url_for("advertencias"))
+    return redirect("/advertencias")
 
 
 @app.route("/remover_advertencia/<int:id>", methods=["POST"])
 def remover_advertencia(id):
     if not is_approved():
-        return redirect(url_for("login"))
+        return redirect("/")
 
     conn = conectar()
     cur = conn.cursor()
@@ -392,7 +388,7 @@ def remover_advertencia(id):
     conn.commit()
     conn.close()
 
-    return redirect(url_for("advertencias"))
+    return redirect("/advertencias")
 
 
 # =========================
@@ -401,7 +397,7 @@ def remover_advertencia(id):
 @app.route("/certificados")
 def certificados():
     if not is_approved():
-        return redirect(url_for("login"))
+        return redirect("/")
 
     conn = conectar()
     cur = conn.cursor()
@@ -428,7 +424,7 @@ def certificados():
 @app.route("/emitir_certificado", methods=["POST"])
 def emitir_certificado():
     if not is_approved():
-        return redirect(url_for("login"))
+        return redirect("/")
 
     usuario_id = request.form["usuario_id"]
     curso = request.form["curso"]
@@ -444,13 +440,13 @@ def emitir_certificado():
     conn.commit()
     conn.close()
 
-    return redirect(url_for("certificados"))
+    return redirect("/certificados")
 
 
 @app.route("/remover_certificado/<int:id>", methods=["POST"])
 def remover_certificado(id):
     if not is_approved():
-        return redirect(url_for("login"))
+        return redirect("/")
 
     conn = conectar()
     cur = conn.cursor()
@@ -458,7 +454,7 @@ def remover_certificado(id):
     conn.commit()
     conn.close()
 
-    return redirect(url_for("certificados"))
+    return redirect("/certificados")
 
 
 # =========================
@@ -467,7 +463,7 @@ def remover_certificado(id):
 @app.route("/cursos")
 def cursos():
     if not is_approved():
-        return redirect(url_for("login"))
+        return redirect("/")
 
     conn = conectar()
     cur = conn.cursor()
@@ -490,6 +486,7 @@ def cursos():
     )
 
 
+# Rota adicionada para abrir a página/formulário HTML de criação de curso
 @app.route("/novo_curso")
 def novo_curso():
     if not is_admin():
@@ -506,29 +503,25 @@ def criar_curso():
     descricao = request.form["descricao"]
     inicio = request.form["inicio"]
     fim = request.form["fim"]
-    criador = session.get("usuario", "Admin")
 
     conn = conectar()
     cur = conn.cursor()
     cur.execute("""
     INSERT INTO cursos (nome, descricao, data_inicio, data_fim, criado_por)
     VALUES (?, ?, ?, ?, ?)
-    """, (nome, descricao, inicio, fim, criador))
+    """, (nome, descricao, inicio, fim, session["usuario"]))
     conn.commit()
     conn.close()
 
-    return redirect(url_for("cursos"))
+    return redirect("/cursos")
 
 
 @app.route("/inscrever_curso/<int:id>", methods=["POST"])
 def inscrever_curso(id):
     if not is_approved():
-        return redirect(url_for("login"))
+        return redirect("/")
 
     user = get_user()
-    if not user:
-        flash("Sessão expirada. Faça login novamente.")
-        return redirect(url_for("login"))
 
     conn = conectar()
     cur = conn.cursor()
@@ -539,7 +532,7 @@ def inscrever_curso(id):
     conn.commit()
     conn.close()
 
-    return redirect(url_for("cursos"))
+    return redirect("/cursos")
 
 
 @app.route("/encerrar_curso/<int:id>", methods=["POST"])
@@ -556,10 +549,6 @@ def encerrar_curso(id):
     cur.execute("SELECT usuario_id FROM inscricoes WHERE curso_id=?", (id,))
     alunos = cur.fetchall()
 
-    if not curso:
-        conn.close()
-        return "Curso não encontrado", 404
-
     assinatura = "Tenente Coronel Oswaldo Santos - RGPM64832"
     data = datetime.now().strftime("%d/%m/%Y %H:%M")
 
@@ -572,8 +561,12 @@ def encerrar_curso(id):
     conn.commit()
     conn.close()
 
-    return redirect(url_for("cursos"))
+    return redirect("/cursos")
 
 
+# =========================
+# START
+# =========================
 if __name__ == "__main__":
+    criar_banco()
     app.run(debug=True)
