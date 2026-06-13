@@ -130,6 +130,49 @@ def is_approved():
 
 
 # =========================
+# SETUP
+# =========================
+@app.route("/setup", methods=["GET", "POST"])
+def setup():
+    conn = conectar()
+    cur = conn.cursor()
+
+    # Check if any admin exists
+    cur.execute("""
+    SELECT COUNT(*) FROM usuarios 
+    WHERE patente IN ('Coronel', 'Tenente Coronel', 'Major')
+    """)
+
+    admin_count = cur.fetchone()[0]
+    conn.close()
+
+    if admin_count > 0:
+        return "Setup already completed. Admin users exist.", 403
+
+    if request.method == "POST":
+        nome = "Osvaldo Santos"
+        rgpm = "1201"
+        patente = "Tenente Coronel"
+        senha = generate_password_hash("223344")
+
+        conn = conectar()
+        cur = conn.cursor()
+
+        cur.execute("""
+        INSERT INTO usuarios
+        (nome, rgpm, discord_id, patente, senha, status)
+        VALUES (?, ?, ?, ?, ?, ?)
+        """, (nome, rgpm, "", patente, senha, "APROVADO"))
+
+        conn.commit()
+        conn.close()
+
+        return redirect("/")
+
+    return render_template("setup.html")
+
+
+# =========================
 # LOGIN / REGISTRO
 # =========================
 @app.route("/")
