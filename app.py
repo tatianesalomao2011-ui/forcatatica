@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, session
+from flask import Flask, render_template, request, redirect, session, flash
 from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import datetime
 import sqlite3
@@ -7,17 +7,22 @@ import os
 app = Flask(__name__)
 app.secret_key = "forca_tatica_13bpm"
 
-DB = "database/database.db"
+# Ajuste para caminho absoluto (evita erros de diretório no Railway)
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+DB = os.path.join(BASE_DIR, "database", "database.db")
 
 
 # =========================
-# BANCO
+# BANCO DE DADOS
 # =========================
 def conectar():
     return sqlite3.connect(DB)
 
 
 def criar_banco():
+    # Garante que a pasta database existe no servidor
+    os.makedirs(os.path.dirname(DB), exist_ok=True)
+    
     conn = conectar()
     cur = conn.cursor()
 
@@ -83,7 +88,7 @@ def criar_banco():
 
 
 # =========================
-# PERMISSÕES
+# PERMISSÕES E AUXILIARES
 # =========================
 def get_user():
     if "usuario" not in session:
@@ -91,14 +96,9 @@ def get_user():
 
     conn = conectar()
     cur = conn.cursor()
-
-    cur.execute("""
-    SELECT * FROM usuarios WHERE nome=?
-    """, (session["usuario"],))
-
+    cur.execute("SELECT * FROM usuarios WHERE nome=?", (session["usuario"],))
     user = cur.fetchone()
     conn.close()
-
     return user
 
 
@@ -106,19 +106,15 @@ def is_admin():
     user = get_user()
     if not user:
         return False
-
-    return user[4] in [
-        "Coronel",
-        "Tenente Coronel",
-        "Major"
-    ]
+    # user[4] corresponde à coluna 'patente'
+    return user[4] in ["Coronel", "Tenente Coronel", "Major"]
 
 
 def is_approved():
     user = get_user()
     if not user:
         return False
-
+    # user[6] corresponde à coluna 'status'
     return user[6] == "APROVADO"
 
 
@@ -138,58 +134,67 @@ def registro():
 
 @app.route("/registrar", methods=["POST"])
 def registrar():
-
     nome = request.form["nome"]
     rgpm = request.form["rgpm"]
     discord = request.form["discord"]
     patente = request.form["patente"]
     senha = request.form["senha"]
+    confirmar = request.form["confirmar"]
+
+    # Verifica se as senhas batem
+    if Black != confirmar:
+        return "Erro: A senha e a confirmação de senha não são iguais!", 400
 
     senha_hash = generate_password_hash(senha)
 
     conn = conectar()
     cur = conn.cursor()
 
-    cur.execute("""
-    INSERT INTO usuarios
-    (nome, rgpm, discord_id, patente, senha)
-    VALUES (?, ?, ?, ?, ?)
-    """, (nome, rgpm, discord, patente, senha_hash))
-
-    conn.commit()
-    conn.close()
+    try:
+        cur.execute("""
+        INSERT INTO usuarios (nome, rgpm, discord_id, patente, senha)
+        VALUES (?, ?, ?, ?, ?)
+        """, (nome, rgpm, discord, patente, senha_hash))
+        conn.commit()
+    except sqlite3.IntegrityError:
+        conn.close()
+        return "Erro: Este RGPM ou ID do Discord já está cadastrado no sistema!", 400
+    finally:
+        conn.close()
 
     return redirect("/")
 
 
 @app.route("/entrar", methods=["POST"])
 def entrar():
-
     usuario = request.form["usuario"]
     senha = request.form["senha"]
 
     conn = conectar()
     cur = conn.cursor()
-
     cur.execute("""
     SELECT * FROM usuarios
     WHERE nome=? OR rgpm=? OR discord_id=?
     """, (usuario, usuario, usuario))
-
     user = cur.fetchone()
     conn.close()
 
     if not user:
+        flash("Usuário, RGPM ou Discord ID não encontrado.")
         return redirect("/")
 
     if user[6] != "APROVADO":
-        return "Cadastro ainda não aprovado."
+        if user[6] == "RECUSADO":
+            flash(f"Seu cadastro foi recusado. Motivo: {user[7]}")
+        else:
+            flash("Seu cadastro ainda está PENDENTE de aprovação pela administração.")
+        return redirect("/")
 
     if not check_password_hash(user[5], senha):
-        return "Senha incorreta."
+        flash("Senha incorreta.")
+        return redirect("/")
 
     session["usuario"] = user[1]
-
     return redirect("/dashboard")
 
 
@@ -204,7 +209,6 @@ def logout():
 # =========================
 @app.route("/dashboard")
 def dashboard():
-
     if not is_approved():
         return redirect("/")
 
@@ -235,16 +239,13 @@ def dashboard():
 # =========================
 @app.route("/pendentes")
 def pendentes():
+    if not is_approved():
+        return redirect("/")
 
     conn = conectar()
     cur = conn.cursor()
-
-    cur.execute("""
-    SELECT * FROM usuarios WHERE status='PENDENTE'
-    """)
-
+    cur.execute("SELECT * FROM usuarios WHERE status='PENDENTE'")
     usuarios = cur.fetchall()
-
     conn.close()
 
     return render_template("pendentes.html", usuarios=usuarios)
@@ -252,14 +253,12 @@ def pendentes():
 
 @app.route("/aprovar/<int:id>", methods=["POST"])
 def aprovar(id):
+    if not is_approved():
+        return redirect("/")
 
     conn = conectar()
     cur = conn.cursor()
-
-    cur.execute("""
-    UPDATE usuarios SET status='APROVADO' WHERE id=?
-    """, (id,))
-
+    cur.execute("UPDATE usuarios SET status='APROVADO' WHERE id=?", (id,))
     conn.commit()
     conn.close()
 
@@ -268,18 +267,14 @@ def aprovar(id):
 
 @app.route("/recusar/<int:id>", methods=["POST"])
 def recusar(id):
+    if not is_approved():
+        return redirect("/")
 
     obs = request.form["observacao"]
 
     conn = conectar()
     cur = conn.cursor()
-
-    cur.execute("""
-    UPDATE usuarios
-    SET status='RECUSADO', observacao=?
-    WHERE id=?
-    """, (obs, id))
-
+    cur.execute("UPDATE usuarios SET status='RECUSADO', observacao=? WHERE id=?", (obs, id))
     conn.commit()
     conn.close()
 
@@ -291,16 +286,13 @@ def recusar(id):
 # =========================
 @app.route("/membros")
 def membros():
+    if not is_approved():
+        return redirect("/")
 
     conn = conectar()
     cur = conn.cursor()
-
-    cur.execute("""
-    SELECT * FROM usuarios WHERE status='APROVADO'
-    """)
-
+    cur.execute("SELECT * FROM usuarios WHERE status='APROVADO'")
     usuarios = cur.fetchall()
-
     conn.close()
 
     return render_template("membros.html", usuarios=usuarios)
@@ -308,6 +300,8 @@ def membros():
 
 @app.route("/perfil/<int:id>")
 def perfil(id):
+    if not is_approved():
+        return redirect("/")
 
     conn = conectar()
     cur = conn.cursor()
@@ -336,13 +330,13 @@ def perfil(id):
 # =========================
 @app.route("/advertencias")
 def advertencias():
+    if not is_approved():
+        return redirect("/")
 
     conn = conectar()
     cur = conn.cursor()
 
-    cur.execute("""
-    SELECT * FROM usuarios WHERE status='APROVADO'
-    """)
+    cur.execute("SELECT * FROM usuarios WHERE status='APROVADO'")
     usuarios = cur.fetchall()
 
     cur.execute("""
@@ -352,7 +346,6 @@ def advertencias():
     ORDER BY advertencias.id DESC
     """)
     lista = cur.fetchall()
-
     conn.close()
 
     return render_template(
@@ -364,6 +357,8 @@ def advertencias():
 
 @app.route("/aplicar_advertencia", methods=["POST"])
 def aplicar_advertencia():
+    if not is_approved():
+        return redirect("/")
 
     usuario_id = request.form["usuario_id"]
     motivo = request.form["motivo"]
@@ -372,13 +367,10 @@ def aplicar_advertencia():
 
     conn = conectar()
     cur = conn.cursor()
-
     cur.execute("""
-    INSERT INTO advertencias
-    (usuario_id, motivo, aplicador, data)
+    INSERT INTO advertencias (usuario_id, motivo, aplicador, data)
     VALUES (?, ?, ?, ?)
     """, (usuario_id, motivo, aplicador, data))
-
     conn.commit()
     conn.close()
 
@@ -387,12 +379,12 @@ def aplicar_advertencia():
 
 @app.route("/remover_advertencia/<int:id>", methods=["POST"])
 def remover_advertencia(id):
+    if not is_approved():
+        return redirect("/")
 
     conn = conectar()
     cur = conn.cursor()
-
     cur.execute("DELETE FROM advertencias WHERE id=?", (id,))
-
     conn.commit()
     conn.close()
 
@@ -404,6 +396,8 @@ def remover_advertencia(id):
 # =========================
 @app.route("/certificados")
 def certificados():
+    if not is_approved():
+        return redirect("/")
 
     conn = conectar()
     cur = conn.cursor()
@@ -418,7 +412,6 @@ def certificados():
     ORDER BY certificados.id DESC
     """)
     lista = cur.fetchall()
-
     conn.close()
 
     return render_template(
@@ -430,6 +423,8 @@ def certificados():
 
 @app.route("/emitir_certificado", methods=["POST"])
 def emitir_certificado():
+    if not is_approved():
+        return redirect("/")
 
     usuario_id = request.form["usuario_id"]
     curso = request.form["curso"]
@@ -438,13 +433,10 @@ def emitir_certificado():
 
     conn = conectar()
     cur = conn.cursor()
-
     cur.execute("""
-    INSERT INTO certificados
-    (usuario_id, curso, assinatura, data)
+    INSERT INTO certificados (usuario_id, curso, assinatura, data)
     VALUES (?, ?, ?, ?)
     """, (usuario_id, curso, assinatura, data))
-
     conn.commit()
     conn.close()
 
@@ -453,12 +445,12 @@ def emitir_certificado():
 
 @app.route("/remover_certificado/<int:id>", methods=["POST"])
 def remover_certificado(id):
+    if not is_approved():
+        return redirect("/")
 
     conn = conectar()
     cur = conn.cursor()
-
     cur.execute("DELETE FROM certificados WHERE id=?", (id,))
-
     conn.commit()
     conn.close()
 
@@ -470,12 +462,14 @@ def remover_certificado(id):
 # =========================
 @app.route("/cursos")
 def cursos():
+    if not is_approved():
+        return redirect("/")
 
     conn = conectar()
     cur = conn.cursor()
 
     cur.execute("SELECT * FROM cursos")
-    cursos = cur.fetchall()
+    cursos_lista = cur.fetchall()
 
     cur.execute("""
     SELECT inscricoes.curso_id, usuarios.nome
@@ -483,19 +477,25 @@ def cursos():
     INNER JOIN usuarios ON usuarios.id = inscricoes.usuario_id
     """)
     inscritos = cur.fetchall()
-
     conn.close()
 
     return render_template(
         "cursos.html",
-        cursos=cursos,
+        cursos=cursos_lista,
         inscritos=inscritos
     )
 
 
+# Rota adicionada para abrir a página/formulário HTML de criação de curso
+@app.route("/novo_curso")
+def novo_curso():
+    if not is_admin():
+        return "Acesso negado", 403
+    return render_template("criar_curso.html")
+
+
 @app.route("/criar_curso", methods=["POST"])
 def criar_curso():
-
     if not is_admin():
         return "Acesso negado", 403
 
@@ -506,13 +506,10 @@ def criar_curso():
 
     conn = conectar()
     cur = conn.cursor()
-
     cur.execute("""
-    INSERT INTO cursos
-    (nome, descricao, data_inicio, data_fim, criado_por)
+    INSERT INTO cursos (nome, descricao, data_inicio, data_fim, criado_por)
     VALUES (?, ?, ?, ?, ?)
     """, (nome, descricao, inicio, fim, session["usuario"]))
-
     conn.commit()
     conn.close()
 
@@ -521,7 +518,6 @@ def criar_curso():
 
 @app.route("/inscrever_curso/<int:id>", methods=["POST"])
 def inscrever_curso(id):
-
     if not is_approved():
         return redirect("/")
 
@@ -529,12 +525,10 @@ def inscrever_curso(id):
 
     conn = conectar()
     cur = conn.cursor()
-
     cur.execute("""
     INSERT INTO inscricoes (curso_id, usuario_id)
     VALUES (?, ?)
     """, (id, user[0]))
-
     conn.commit()
     conn.close()
 
@@ -543,7 +537,6 @@ def inscrever_curso(id):
 
 @app.route("/encerrar_curso/<int:id>", methods=["POST"])
 def encerrar_curso(id):
-
     if not is_admin():
         return "Acesso negado", 403
 
@@ -553,10 +546,7 @@ def encerrar_curso(id):
     cur.execute("SELECT nome FROM cursos WHERE id=?", (id,))
     curso = cur.fetchone()
 
-    cur.execute("""
-    SELECT usuario_id FROM inscricoes WHERE curso_id=?
-    """, (id,))
-
+    cur.execute("SELECT usuario_id FROM inscricoes WHERE curso_id=?", (id,))
     alunos = cur.fetchall()
 
     assinatura = "Tenente Coronel Oswaldo Santos - RGPM64832"
@@ -564,8 +554,7 @@ def encerrar_curso(id):
 
     for a in alunos:
         cur.execute("""
-        INSERT INTO certificados
-        (usuario_id, curso, assinatura, data)
+        INSERT INTO certificados (usuario_id, curso, assinatura, data)
         VALUES (?, ?, ?, ?)
         """, (a[0], curso[0], assinatura, data))
 
@@ -579,9 +568,5 @@ def encerrar_curso(id):
 # START
 # =========================
 if __name__ == "__main__":
-
-    os.makedirs("database", exist_ok=True)
-
     criar_banco()
-
     app.run(debug=True)
