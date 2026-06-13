@@ -255,7 +255,7 @@ def logout():
 @app.route("/dashboard")
 def dashboard():
 
-    if not is_approved():
+    if not is_admin():
         return redirect("/")
 
     conn = conectar()
@@ -543,11 +543,14 @@ def cursos():
     )
 
 
-@app.route("/criar_curso", methods=["POST"])
+@app.route("/criar_curso", methods=["GET", "POST"])
 def criar_curso():
 
     if not is_admin():
-        return "Acesso negado", 403
+        return redirect("/")
+
+    if request.method == "GET":
+        return render_template("criar_curso.html")
 
     nome = request.form["nome"]
     descricao = request.form["descricao"]
