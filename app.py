@@ -82,8 +82,11 @@ def criar_banco():
     conn.close()
 
 
-os.makedirs("database", exist_ok=True)
-criar_banco()
+try:
+    os.makedirs("database", exist_ok=True)
+    criar_banco()
+except Exception as e:
+    print(f"Error initializing database: {e}", flush=True)
 
 
 # =========================
