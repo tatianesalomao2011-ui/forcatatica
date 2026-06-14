@@ -1,20 +1,21 @@
 /* ==========================================================================
-   CONFIGURAÇÕES GERAIS E VARIÁVEIS (Tema Tático Militar)
+   CONFIGURAÇÕES GERAIS - TEMA OPERACIONAL FORÇA TÁTICA PM
    ========================================================================== */
 :root {
-    --bg-principal: #0b0d10;
-    --bg-card: rgba(22, 27, 34, 0.8);
-    --borda-card: rgba(255, 255, 255, 0.08);
+    --bg-black-ops: #080a0c;
+    --bg-tactical-card: rgba(13, 17, 23, 0.85);
+    --borda-militar: rgba(201, 157, 66, 0.15);
+    --borda-militar-focus: #c99d42;
     --cor-texto: #f0f3f6;
-    --cor-mutado: #8b949e;
-    --tactical-gold: #c99d42;
-    --tactical-gold-hover: #e0b35a;
-    --btn-sucesso: #238636;
-    --btn-sucesso-hover: #2ea043;
-    --btn-perigo: #da3637;
-    --btn-perigo-hover: #f85149;
-    --sidebar-width: 260px;
-    --transicao: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    --cor-subtexto: #8b949e;
+    --ouro-militar: #c99d42;
+    --ouro-militar-hover: #e0b35a;
+    --btn-verde-comissao: #1b5e20;
+    --btn-verde-hover: #2e7d32;
+    --btn-vermelho-alerta: #b71c1c;
+    --btn-vermelho-hover: #c62828;
+    --sidebar-largura: 260px;
+    --transicao-rapida: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 * {
@@ -25,22 +26,23 @@
 }
 
 body {
-    background-color: var(--bg-principal);
+    background-color: var(--bg-black-ops);
     color: var(--cor-texto);
     min-height: 100vh;
     overflow-x: hidden;
-    background-image: linear-gradient(rgba(11, 13, 16, 0.85), rgba(11, 13, 16, 0.95)), 
-                      url('https://images.unsplash.com/photo-1595435934249-5df7ed86e1c0?q=80&w=1920'); /* Imagem tática de fundo */
+    /* Imagem de Fundo Oficial: Viatura e Policiamento em Operação Noturna */
+    background-image: linear-gradient(rgba(8, 10, 12, 0.88), rgba(8, 10, 12, 0.96)), 
+                      url('https://images.unsplash.com/photo-1600132806608-231446b2e7af?q=80&w=1920'); 
     background-size: cover;
     background-position: center;
     background-attachment: fixed;
 }
 
-/* Animação de entrada suave para as páginas */
-@keyframes fadeInUp {
+/* Animação tática de entrada (Surgimento operacional de baixo para cima) */
+@keyframes entradaTatica {
     from {
         opacity: 0;
-        transform: translateY(20px);
+        transform: translateY(15px);
     }
     to {
         opacity: 1;
@@ -49,12 +51,12 @@ body {
 }
 
 /* ==========================================================================
-   TELA DE LOGIN E REGISTRO (Estilo Moderno / Glassmorphism)
+   TELAS DE LOGIN / REGISTRO / SETUP (Padrão de Guarda e Patrulha)
    ========================================================================== */
 .background-overlay {
     position: fixed;
     top: 0; left: 0; width: 100%; height: 100%;
-    background: radial-gradient(circle at center, transparent 20%, rgba(0,0,0,0.8) 100%);
+    background: radial-gradient(circle at center, transparent 30%, rgba(0, 0, 0, 0.9) 100%);
     z-index: -1;
 }
 
@@ -67,358 +69,368 @@ body {
 }
 
 .login-card, .register-card {
-    background: var(--bg-card);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    border: 1px solid var(--borda-card);
+    background: var(--bg-tactical-card);
+    backdrop-filter: blur(15px);
+    -webkit-backdrop-filter: blur(15px);
+    border: 1px solid var(--borda-militar);
     padding: 40px;
-    border-radius: 16px;
+    border-radius: 12px;
     width: 100%;
     max-width: 450px;
-    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
-    animation: fadeInUp 0.6s ease-out;
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.7), inset 0 0 20px rgba(0, 0, 0, 0.6);
+    animation: entradaTatica 0.5s ease-out;
     text-align: center;
 }
 
 .logo-area h1, .register-card h1 {
-    font-size: 1.6rem;
-    font-weight: 700;
+    font-size: 1.5rem;
+    font-weight: 800;
     letter-spacing: 2px;
     color: #ffffff;
     margin-bottom: 5px;
     text-transform: uppercase;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.5);
 }
 
 .logo-area p {
-    color: var(--tactical-gold);
-    font-size: 0.9rem;
-    font-weight: 500;
-    margin-bottom: 30px;
-    letter-spacing: 1px;
+    color: var(--ouro-militar);
+    font-size: 0.85rem;
+    font-weight: 600;
+    margin-bottom: 35px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
 }
 
 .input-group {
-    margin-bottom: 20px;
+    margin-bottom: 22px;
     text-align: left;
 }
 
 .input-group label {
     display: block;
-    font-size: 0.85rem;
-    color: var(--cor-mutado);
+    font-size: 0.8rem;
+    color: var(--cor-subtexto);
     margin-bottom: 8px;
-    font-weight: 500;
+    font-weight: 600;
     text-transform: uppercase;
-    letter-spacing: 0.5px;
+    letter-spacing: 1px;
 }
 
 .input-group input, .input-group select, .form-card textarea {
     width: 100%;
     padding: 12px 16px;
-    background: rgba(0, 0, 0, 0.4);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 8px;
+    background: rgba(4, 6, 8, 0.7);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 6px;
     color: #ffffff;
     font-size: 0.95rem;
-    transition: var(--transicao);
+    transition: var(--transicao-rapida);
 }
 
 .input-group input:focus, .input-group select:focus, .form-card textarea:focus {
     outline: none;
-    border-color: var(--tactical-gold);
-    box-shadow: 0 0 0 3px rgba(201, 157, 66, 0.2);
-    background: rgba(0, 0, 0, 0.6);
+    border-color: var(--borda-militar-focus);
+    box-shadow: 0 0 8px rgba(201, 157, 66, 0.3);
+    background: rgba(0, 0, 0, 0.9);
 }
 
-/* Botões com Animação Glow */
-.btn-login, .btn-aprovar, .btn-recusar {
+/* Botão de Comando com Efeito de Brilho Dourado */
+.btn-login {
     width: 100%;
     padding: 14px;
     border: none;
-    border-radius: 8px;
-    font-size: 1rem;
-    font-weight: 600;
-    letter-spacing: 1px;
+    border-radius: 6px;
+    font-size: 0.95rem;
+    font-weight: 700;
+    letter-spacing: 1.5px;
     cursor: pointer;
-    transition: var(--transicao);
+    transition: var(--transicao-rapida);
     text-transform: uppercase;
-}
-
-.btn-login {
-    background: linear-gradient(135deg, var(--tactical-gold), #a37a2c);
-    color: #000000;
-    margin-top: 10px;
-    box-shadow: 0 4px 15px rgba(201, 157, 66, 0.3);
+    background: linear-gradient(135deg, var(--ouro-militar), #967128);
+    color: #050708;
+    box-shadow: 0 4px 15px rgba(201, 157, 66, 0.2);
 }
 
 .btn-login:hover {
     transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(201, 157, 66, 0.5);
-    background: linear-gradient(135deg, var(--tactical-gold-hover), var(--tactical-gold));
+    box-shadow: 0 6px 20px rgba(201, 157, 66, 0.4);
+    background: linear-gradient(135deg, var(--ouro-militar-hover), var(--ouro-militar));
 }
 
 .btn-login:active { transform: translateY(0); }
 
 .register-area {
     margin-top: 25px;
-    font-size: 0.9rem;
-    color: var(--cor-mutado);
+    font-size: 0.85rem;
+    color: var(--cor-subtexto);
 }
 
 .register-area a {
-    color: var(--tactical-gold);
+    color: var(--ouro-militar);
     text-decoration: none;
-    font-weight: 500;
-    transition: var(--transicao);
+    font-weight: 600;
+    transition: var(--transicao-rapida);
 }
 
-.register-area a:hover { color: #ffffff; text-shadow: 0 0 8px var(--tactical-gold); }
+.register-area a:hover { color: #ffffff; text-shadow: 0 0 10px var(--ouro-militar); }
 
-/* Caixa de Alertas */
+/* Caixa de Alertas e Mensagens do Sistema */
 .alert-box {
-    background: rgba(218, 54, 55, 0.15);
-    border-left: 4px solid var(--btn-perigo);
+    background: rgba(183, 28, 28, 0.2);
+    border-left: 4px solid var(--btn-vermelho-alerta);
     padding: 12px;
-    border-radius: 6px;
+    border-radius: 4px;
     margin-bottom: 20px;
-    color: #ff9494;
+    color: #ff9e9e;
     font-size: 0.85rem;
     text-align: left;
-    animation: fadeInUp 0.3s ease;
 }
 
 /* ==========================================================================
-   LAYOUT DO PAINEL (Sidebar + Conteúdo Principal)
+   PAINEL INTERNO (Menu Lateral de Comando e Área de Trabalho)
    ========================================================================== */
 .sidebar {
     position: fixed;
     top: 0; left: 0; bottom: 0;
-    width: var(--sidebar-width);
-    background: rgba(15, 18, 23, 0.95);
-    backdrop-filter: blur(10px);
-    border-right: 1px solid var(--borda-card);
-    padding: 30px 20px;
+    width: var(--sidebar-largura);
+    background: rgba(10, 14, 19, 0.98);
+    border-right: 1px solid rgba(255, 255, 255, 0.05);
+    padding: 30px 15px;
     z-index: 100;
 }
 
 .sidebar-header h2 {
     color: #ffffff;
-    font-size: 1.3rem;
-    font-weight: 700;
+    font-size: 1.25rem;
+    font-weight: 800;
     letter-spacing: 2px;
     text-align: center;
-    margin-bottom: 40px;
-    border-bottom: 2px solid var(--tactical-gold);
+    margin-bottom: 35px;
+    border-bottom: 2px solid var(--ouro-militar);
     padding-bottom: 15px;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.5);
 }
 
 .sidebar ul { list-style: none; }
-
-.sidebar ul li { margin-bottom: 8px; }
+.sidebar ul li { margin-bottom: 6px; }
 
 .sidebar ul li a {
     display: block;
     padding: 12px 16px;
-    color: var(--cor-mutado);
+    color: var(--cor-subtexto);
     text-decoration: none;
-    font-weight: 500;
-    border-radius: 8px;
-    transition: var(--transicao);
-    font-size: 0.95rem;
+    font-weight: 600;
+    border-radius: 6px;
+    transition: var(--transicao-rapida);
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
 }
 
-/* Animação hover nos itens do menu lateral */
+/* Efeito de seleção de menu militar */
 .sidebar ul li a:hover {
     color: #ffffff;
-    background: rgba(255, 255, 255, 0.05);
-    transform: translateX(5px);
-}
-
-/* Destacar página ativa (Simulação baseada no link) */
-.sidebar ul li a:focus, .sidebar ul li a:active {
-    background: rgba(201, 157, 66, 0.1);
-    color: var(--tactical-gold);
+    background: rgba(201, 157, 66, 0.08);
+    border-left: 3px solid var(--ouro-militar);
+    transform: translateX(4px);
 }
 
 .main-content {
-    margin-left: var(--sidebar-width);
-    padding: 40px;
-    animation: fadeInUp 0.5s ease-out;
+    margin-left: var(--sidebar-largura);
+    padding: 45px;
+    animation: entradaTatica 0.4s ease-out;
 }
 
 .main-content h1 {
-    font-size: 2rem;
-    font-weight: 700;
-    margin-bottom: 10px;
+    font-size: 1.8rem;
+    font-weight: 800;
+    margin-bottom: 8px;
     color: #ffffff;
+    text-transform: uppercase;
+    letter-spacing: 1px;
 }
 
 .header p {
-    color: var(--cor-mutado);
+    color: var(--cor-subtexto);
     margin-bottom: 40px;
-    font-size: 1rem;
+    font-size: 0.95rem;
 }
 
 /* ==========================================================================
-   DASHBOARD CARDS
+   BLOCOS DE STATUS / INFORMAÇÕES (Cards Operacionais)
    ========================================================================== */
 .dashboard-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
     gap: 25px;
     margin-bottom: 40px;
 }
 
 .card-status {
-    background: var(--bg-card);
-    backdrop-filter: blur(8px);
-    border: 1px solid var(--borda-card);
-    padding: 30px;
-    border-radius: 14px;
-    transition: var(--transicao);
+    background: var(--bg-tactical-card);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    padding: 25px;
+    border-radius: 8px;
+    transition: var(--transicao-rapida);
     position: relative;
-    overflow: hidden;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.4);
 }
 
 .card-status:hover {
-    transform: translateY(-5px);
-    border-color: rgba(201, 157, 66, 0.3);
-    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+    transform: translateY(-4px);
+    border-color: var(--ouro-militar);
+    box-shadow: 0 12px 30px rgba(0,0,0,0.6);
 }
 
 .card-status::before {
     content: '';
     position: absolute;
     top: 0; left: 0; width: 4px; height: 100%;
-    background: var(--tactical-gold);
+    background: var(--ouro-militar);
 }
 
 .card-status h3 {
-    font-size: 1rem;
-    color: var(--cor-mutado);
+    font-size: 0.85rem;
+    color: var(--cor-subtexto);
     text-transform: uppercase;
     letter-spacing: 1px;
-    margin-bottom: 15px;
+    margin-bottom: 12px;
+    font-weight: 700;
 }
 
 .card-status .number {
-    font-size: 3rem;
-    font-weight: 700;
+    font-size: 2.8rem;
+    font-weight: 800;
     color: #ffffff;
     line-height: 1;
-    margin-bottom: 10px;
+    margin-bottom: 8px;
 }
 
 .card-status p {
-    font-size: 0.85rem;
-    color: var(--cor-mutado);
+    font-size: 0.8rem;
+    color: var(--cor-subtexto);
 }
 
 /* ==========================================================================
-   CURSOS / CARDS DE CONTEÚDO
+   CARDS DE CURSOS E INFORMAÇÕES GERAIS
    ========================================================================== */
 .card {
-    background: var(--bg-card);
-    border: 1px solid var(--borda-card);
+    background: var(--bg-tactical-card);
+    border: 1px solid rgba(255, 255, 255, 0.05);
     padding: 25px;
-    border-radius: 12px;
-    margin-bottom: 25px;
-    backdrop-filter: blur(8px);
-    transition: var(--transicao);
+    border-radius: 8px;
+    margin-bottom: 20px;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+    transition: var(--transicao-rapida);
 }
 
 .card:hover {
     border-color: rgba(255, 255, 255, 0.15);
-    box-shadow: 0 8px 25px rgba(0,0,0,0.2);
 }
 
-.card h2 { color: var(--tactical-gold); margin-bottom: 10px; font-size: 1.4rem; }
-.card p { margin-bottom: 10px; color: #e1e4e8; font-size: 0.95rem; }
-.card strong { color: #ffffff; }
+.card h2 { 
+    color: var(--ouro-militar); 
+    margin-bottom: 12px; 
+    font-size: 1.3rem; 
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
 
-/* Formulário de curso dentro do card */
-.card form { margin: 15px 0; }
+.card p { margin-bottom: 8px; color: #e1e4e8; font-size: 0.9rem; }
+.card strong { color: #ffffff; font-weight: 600; }
+.card h4 { color: #ffffff; margin-top: 15px; margin-bottom: 8px; font-size: 0.95rem; text-transform: uppercase; }
+.card ul { padding-left: 20px; color: var(--cor-subtexto); font-size: 0.9rem; }
 
 /* ==========================================================================
-   TABELAS DESIGN REVOLUCIONADO
+   TABELAS DE DADOS (Efetivo, Advertências, Certificados)
    ========================================================================== */
 .tabela {
     width: 100%;
     border-collapse: collapse;
     margin-top: 25px;
-    background: var(--bg-card);
-    border-radius: 10px;
+    background: var(--bg-tactical-card);
+    border-radius: 8px;
     overflow: hidden;
-    border: 1px solid var(--borda-card);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    box-shadow: 0 10px 25px rgba(0,0,0,0.4);
 }
 
 .tabela th {
-    background: rgba(0, 0, 0, 0.4);
-    color: var(--tactical-gold);
+    background: rgba(4, 6, 8, 0.9);
+    color: var(--ouro-militar);
     text-align: left;
-    padding: 16px;
-    font-size: 0.85rem;
+    padding: 14px 16px;
+    font-size: 0.8rem;
     text-transform: uppercase;
-    letter-spacing: 1px;
-    font-weight: 600;
+    letter-spacing: 1.5px;
+    font-weight: 700;
+    border-bottom: 2px solid var(--ouro-militar);
 }
 
 .tabela td {
-    padding: 16px;
+    padding: 14px 16px;
     color: #e1e4e8;
-    border-bottom: 1px solid var(--borda-card);
-    font-size: 0.95rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+    font-size: 0.9rem;
 }
 
 .tabela tr:last-child td { border-bottom: none; }
-
-.tabela tr:hover td {
-    background: rgba(255, 255, 255, 0.02);
-}
+.tabela tr:hover td { background: rgba(255, 255, 255, 0.02); }
 
 /* ==========================================================================
-   BOTÕES DE AÇÃO INTERNOS
+   BOTÕES DE AÇÃO INTERNOS OPERACIONAIS
    ========================================================================== */
+.btn-aprovar, .btn-recusar {
+    padding: 8px 18px;
+    border: none;
+    border-radius: 4px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    cursor: pointer;
+    text-transform: uppercase;
+    transition: var(--transicao-rapida);
+}
+
 .btn-aprovar {
-    background: var(--btn-sucesso);
+    background: var(--btn-verde-comissao);
     color: #ffffff;
-    width: auto;
-    padding: 8px 20px;
-    font-size: 0.85rem;
 }
 .btn-aprovar:hover {
-    background: var(--btn-sucesso-hover);
+    background: var(--btn-verde-hover);
     transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(46, 125, 50, 0.3);
 }
 
 .btn-recusar {
-    background: var(--btn-perigo);
+    background: var(--btn-vermelho-alerta);
     color: #ffffff;
-    width: auto;
-    padding: 8px 20px;
-    font-size: 0.85rem;
 }
 .btn-recusar:hover {
-    background: var(--btn-perigo-hover);
+    background: var(--btn-vermelho-hover);
     transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(198, 40, 40, 0.3);
 }
 
-/* Formulários de criação em cartões separados */
+/* Painel de Formulários */
 .form-card {
-    background: var(--bg-card);
-    border: 1px solid var(--borda-card);
+    background: var(--bg-tactical-card);
+    border: 1px solid rgba(255, 255, 255, 0.05);
     padding: 30px;
-    border-radius: 12px;
+    border-radius: 8px;
     max-width: 600px;
     margin-bottom: 30px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.4);
 }
 
 .form-card label {
     display: block;
     margin-bottom: 8px;
-    font-size: 0.9rem;
-    color: var(--cor-mutado);
+    font-size: 0.85rem;
+    color: var(--cor-subtexto);
     margin-top: 15px;
+    text-transform: uppercase;
+    font-weight: 600;
 }
 .form-card label:first-child { margin-top: 0; }
 
