@@ -1,393 +1,62 @@
-<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-<title>Força Tática - 13º BPM/M</title>
-
-<link rel="stylesheet" href="style.css">
-
-<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
-</head>
-
-<body>
-
-<!-- LOGIN -->
-
-<div id="loginPage" class="login-page">
-
-    <div class="overlay"></div>
-
-    <div class="login-container">
-
-        <div class="login-header">
-            <h1>FORÇA TÁTICA</h1>
-            <p>13º Batalhão da Polícia Militar</p>
-        </div>
-
-        <form id="loginForm">
-
-            <div class="input-group">
-                <label>Usuário</label>
-                <input
-                    type="text"
-                    id="username"
-                    placeholder="Digite o usuário"
-                    required
-                >
-            </div>
-
-            <div class="input-group">
-                <label>Senha</label>
-                <input
-                    type="password"
-                    id="password"
-                    placeholder="Digite a senha"
-                    required
-                >
-            </div>
-
-            <button type="submit" class="login-btn">
-                ENTRAR
-            </button>
-
-        </form>
-
-    </div>
-
-</div>
-
-<!-- SISTEMA -->
-
-<div id="systemPage" class="system-page hidden">
-
-    <aside class="sidebar">
-
-        <div class="sidebar-logo">
-            <h2>FORÇA TÁTICA</h2>
-        </div>
-
-        <nav>
-
-            <button class="menu-btn active" data-page="dashboard">
-                <i class="fas fa-chart-line"></i>
-                Visão Geral
-            </button>
-
-            <button class="menu-btn" data-page="adicionar-policial">
-                <i class="fas fa-user-plus"></i>
-                Adicionar Policial
-            </button>
-
-            <button class="menu-btn" data-page="policiais">
-                <i class="fas fa-users"></i>
-                Policiais
-            </button>
-
-            <button class="menu-btn" data-page="advertencias">
-                <i class="fas fa-triangle-exclamation"></i>
-                Advertências
-            </button>
-
-            <button class="menu-btn" data-page="certificados">
-                <i class="fas fa-award"></i>
-                Certificados
-            </button>
-
-            <button class="menu-btn" data-page="cursos">
-                <i class="fas fa-graduation-cap"></i>
-                Cursos
-            </button>
-
-            <button id="logoutBtn" class="menu-btn logout">
-                <i class="fas fa-right-from-bracket"></i>
-                Sair
-            </button>
-
-        </nav>
-
-    </aside>
-
-    <main class="content">
-
-        <!-- DASHBOARD -->
-
-        <section id="dashboard" class="page active-page">
-
-            <h1>Visão Geral</h1>
-
-            <div class="cards-grid">
-
-                <div class="card">
-                    <h3>Total de Policiais</h3>
-                    <span id="totalPoliciais">0</span>
-                </div>
-
-                <div class="card">
-                    <h3>Advertências</h3>
-                    <span id="totalAdvertencias">0</span>
-                </div>
-
-                <div class="card">
-                    <h3>Certificados</h3>
-                    <span id="totalCertificados">0</span>
-                </div>
-
-                <div class="card">
-                    <h3>Cursos</h3>
-                    <span id="totalCursos">0</span>
-                </div>
-
-                <div class="card">
-                    <h3>Status</h3>
-                    <span>ONLINE</span>
-                </div>
-
-            </div>
-
-        </section>
-
-        <!-- ADICIONAR POLICIAL -->
-
-        <section id="adicionar-policial" class="page">
-
-            <h1>Adicionar Policial</h1>
-
-            <form id="policialForm" class="form-grid">
-
-                <input
-                    type="text"
-                    id="nome"
-                    placeholder="Nome do Policial"
-                    required
-                >
-
-                <input
-                    type="text"
-                    id="rgpm"
-                    placeholder="RGPM"
-                    required
-                >
-
-                <input
-                    type="text"
-                    id="discord"
-                    placeholder="ID Discord"
-                    required
-                >
-
-                <select id="patente" required>
-
-                    <option value="">
-                        Selecione a Patente
-                    </option>
-
-                    <option>Soldado 1ª Classe</option>
-                    <option>Cabo</option>
-                    <option>3º Sargento</option>
-                    <option>2º Sargento</option>
-                    <option>1º Sargento</option>
-                    <option>Subtenente</option>
-                    <option>Aspirante a Oficial</option>
-                    <option>2º Tenente</option>
-                    <option>1º Tenente</option>
-                    <option>Capitão</option>
-                    <option>Major</option>
-                    <option>Tenente-Coronel</option>
-                    <option>Coronel</option>
-
-                </select>
-
-                <select id="cargo" required>
-
-                    <option value="">
-                        Cargo Administrativo
-                    </option>
-
-                    <option>Comando</option>
-                    <option>Subcomando</option>
-                    <option>Administrativo FT</option>
-                    <option>Policial FT</option>
-
-                </select>
-
-                <button type="submit">
-                    Adicionar Policial
-                </button>
-
-            </form>
-
-        </section>
-                <!-- POLICIAIS -->
-
-        <section id="policiais" class="page">
-
-            <h1>Policiais Registrados</h1>
-
-            <div class="table-container">
-
-                <table>
-
-                    <thead>
-                        <tr>
-                            <th>Nome</th>
-                            <th>Patente</th>
-                            <th>RGPM</th>
-                            <th>Discord</th>
-                            <th>Cargo</th>
-                            <th>Ações</th>
-                        </tr>
-                    </thead>
-
-                    <tbody id="listaPoliciais">
-
-                    </tbody>
-
-                </table>
-
-            </div>
-
-        </section>
-
-        <!-- ADVERTÊNCIAS -->
-
-        <section id="advertencias" class="page">
-
-            <h1>Adicionar Advertência</h1>
-
-            <form id="advertenciaForm" class="form-grid">
-
-                <select id="tipoAdvertencia" required>
-
-                    <option value="">
-                        Selecione a Advertência
-                    </option>
-
-                    <option>Aviso Verbal</option>
-                    <option>Advertência Leve</option>
-                    <option>Advertência Média</option>
-                    <option>Advertência Grave</option>
-
-                </select>
-
-                <input
-                    type="number"
-                    id="valorMulta"
-                    placeholder="Valor da Multa"
-                >
-
-                <input
-                    type="text"
-                    id="provaAdvertencia"
-                    placeholder="Link da Evidência"
-                >
-
-                <button type="submit">
-                    Registrar Advertência
-                </button>
-
-            </form>
-
-            <div id="listaAdvertencias"></div>
-
-        </section>
-
-        <!-- CERTIFICADOS -->
-
-        <section id="certificados" class="page">
-
-            <h1>Adicionar Certificado</h1>
-
-            <form id="certificadoForm" class="form-grid">
-
-                <input
-                    type="text"
-                    id="nomeCertificado"
-                    placeholder="Nome do Certificado"
-                    required
-                >
-
-                <input
-                    type="text"
-                    id="assinaturaCertificado"
-                    placeholder="Assinatura"
-                    required
-                >
-
-                <input
-                    type="file"
-                    id="arquivoCertificado"
-                    accept=".pdf,.png,.jpg,.jpeg"
-                >
-
-                <button type="submit">
-                    Registrar Certificado
-                </button>
-
-            </form>
-
-            <div id="listaCertificados"></div>
-
-        </section>
-
-        <!-- CURSOS -->
-
-        <section id="cursos" class="page">
-
-            <h1>Adicionar Curso</h1>
-
-            <form id="cursoForm" class="form-grid">
-
-                <input
-                    type="text"
-                    id="nomeCurso"
-                    placeholder="Nome do Curso"
-                    required
-                >
-
-                <input
-                    type="date"
-                    id="dataInicio"
-                    required
-                >
-
-                <input
-                    type="date"
-                    id="dataFim"
-                    required
-                >
-
-                <input
-                    type="text"
-                    id="assinaturaCurso"
-                    placeholder="Assinatura"
-                    required
-                >
-
-                <input
-                    type="file"
-                    id="arquivoCurso"
-                    accept=".pdf,.png,.jpg,.jpeg"
-                >
-
-                <button type="submit">
-                    Registrar Curso
-                </button>
-
-            </form>
-
-            <div id="listaCursos"></div>
-
-        </section>
-
-    </main>
-
-</div>
-
-<script src="app.js"></script>
-
-</body>
-</html>
+require("dotenv").config();
+
+const express = require("express");
+const cors = require("cors");
+const path = require("path");
+
+const app = express();
+
+require("./database/database");
+
+app.use(cors());
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
+app.use(express.static(path.join(__dirname, "public")));
+
+/* ROTAS */
+const authRoutes = require("./routes/authRoutes");
+const policialRoutes = require("./routes/policialRoutes");
+const advertenciaRoutes = require("./routes/advertenciaRoutes");
+const certificadoRoutes = require("./routes/certificadoRoutes");
+const cursoRoutes = require("./routes/cursoRoutes");
+
+app.use("/api/auth", authRoutes);
+app.use("/api/policiais", policialRoutes);
+app.use("/api/advertencias", advertenciaRoutes);
+app.use("/api/certificados", certificadoRoutes);
+app.use("/api/cursos", cursoRoutes);
+
+/* DASHBOARD */
+const db = require("./database/database");
+
+app.get("/api/dashboard", (req, res) => {
+    db.get("SELECT COUNT(*) as total FROM policiais", (e1, p) => {
+        db.get("SELECT COUNT(*) as total FROM advertencias", (e2, a) => {
+            db.get("SELECT COUNT(*) as total FROM certificados", (e3, c) => {
+                db.get("SELECT COUNT(*) as total FROM cursos", (e4, cu) => {
+
+                    res.json({
+                        policiais: p.total,
+                        advertencias: a.total,
+                        certificados: c.total,
+                        cursos: cu.total
+                    });
+
+                });
+            });
+        });
+    });
+});
+
+/* FRONT */
+app.get("*", (req, res) => {
+    res.sendFile(path.join(__dirname, "public", "index.html"));
+});
+
+/* START (IMPORTANTE) */
+const PORT = process.env.PORT || 3000;
+
+app.listen(PORT, "0.0.0.0", () => {
+    console.log("Servidor rodando na porta", PORT);
+});
