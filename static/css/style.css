@@ -1,267 +1,428 @@
 /* ==========================================================================
-   CONFIGURAÇÕES GERAIS E VARIÁVEIS (TEMA FORÇA TÁTICA / BLACK OPS)
+   CONFIGURAÇÕES GERAIS E VARIÁVEIS (Tema Tático Militar)
    ========================================================================== */
 :root {
-    --bg-principal: #0b0c10;       /* Preto Absoluto / Operacional */
-    --bg-card: #1f2833;            /* Cinza Carbono Escuro */
-    --cor-borda: #2c3540;           /* Linha de separação sutil */
-    --tactical-blue: #1f4068;       /* Azul Tático Noturno */
-    --tactical-glow: #00d2ff;       /* Azul de Destaque / Neon Operacional */
-    --texto-principal: #ffffff;    /* Branco Puro */
-    --texto-secundario: #c5a059;   /* Dourado Velho (Excelente para patentes/destaques) */
-    --texto-mutado: #95a5a6;       /* Cinza para textos menos importantes */
-    --alerta-vermelho: #e74c3c;    /* Vermelho para advertências/perigo */
-    --sucesso-verde: #2ecc71;      /* Verde para certificados/sucesso */
-    --fonte-principal: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    --transicao-suave: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+    --bg-principal: #0b0d10;
+    --bg-card: rgba(22, 27, 34, 0.8);
+    --borda-card: rgba(255, 255, 255, 0.08);
+    --cor-texto: #f0f3f6;
+    --cor-mutado: #8b949e;
+    --tactical-gold: #c99d42;
+    --tactical-gold-hover: #e0b35a;
+    --btn-sucesso: #238636;
+    --btn-sucesso-hover: #2ea043;
+    --btn-perigo: #da3637;
+    --btn-perigo-hover: #f85149;
+    --sidebar-width: 260px;
+    --transicao: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 * {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
+    font-family: 'Poppins', sans-serif;
 }
 
 body {
     background-color: var(--bg-principal);
-    color: var(--texto-principal);
-    font-family: var(--fonte-principal);
-    line-height: 1.6;
+    color: var(--cor-texto);
+    min-height: 100vh;
     overflow-x: hidden;
+    background-image: linear-gradient(rgba(11, 13, 16, 0.85), rgba(11, 13, 16, 0.95)), 
+                      url('https://images.unsplash.com/photo-1595435934249-5df7ed86e1c0?q=80&w=1920'); /* Imagem tática de fundo */
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+}
+
+/* Animação de entrada suave para as páginas */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 /* ==========================================================================
-   ANIMAÇÕES (The Good Stuff)
+   TELA DE LOGIN E REGISTRO (Estilo Moderno / Glassmorphism)
    ========================================================================== */
-@keyframes fadeIn {
-    from { opacity: 0; transform: translateY(20px); }
-    to { opacity: 1; transform: translateY(0); }
+.background-overlay {
+    position: fixed;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: radial-gradient(circle at center, transparent 20%, rgba(0,0,0,0.8) 100%);
+    z-index: -1;
 }
 
-@keyframes pulseGlow {
-    0% { box-shadow: 0 0 5px rgba(0, 210, 255, 0.2); }
-    50% { box-shadow: 0 0 20px rgba(0, 210, 255, 0.6); }
-    100% { box-shadow: 0 0 5px rgba(0, 210, 255, 0.2); }
-}
-
-@keyframes scanline {
-    0% { background-position: 0 0; }
-    100% { background-position: 0 100%; }
-}
-
-/* Classe global para aplicar entrada suave nas páginas */
-.anima-entrada {
-    animation: fadeIn 0.6s ease-out forwards;
-}
-
-/* ==========================================================================
-   ESTRUTURA BASE E DASHBOARD
-   ========================================================================== */
-.container {
-    width: 100%;
-    max-width: 1200px;
-    margin: 0 auto;
+.login-container, .register-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
     padding: 20px;
 }
 
-/* Se você usar uma Sidebar para o painel */
-.dashboard-layout {
-    display: flex;
-    min-height: 100vh;
-}
-
-.sidebar {
-    width: 260px;
-    background-color: var(--bg-card);
-    border-right: 2px solid var(--cor-borda);
-    padding: 30px 20px;
-}
-
-.conteudo-principal {
-    flex: 1;
+.login-card, .register-card {
+    background: var(--bg-card);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid var(--borda-card);
     padding: 40px;
-    background-image: linear-gradient(rgba(11, 12, 16, 0.95), rgba(11, 12, 16, 0.95));
+    border-radius: 16px;
+    width: 100%;
+    max-width: 450px;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+    animation: fadeInUp 0.6s ease-out;
+    text-align: center;
+}
+
+.logo-area h1, .register-card h1 {
+    font-size: 1.6rem;
+    font-weight: 700;
+    letter-spacing: 2px;
+    color: #ffffff;
+    margin-bottom: 5px;
+    text-transform: uppercase;
+}
+
+.logo-area p {
+    color: var(--tactical-gold);
+    font-size: 0.9rem;
+    font-weight: 500;
+    margin-bottom: 30px;
+    letter-spacing: 1px;
+}
+
+.input-group {
+    margin-bottom: 20px;
+    text-align: left;
+}
+
+.input-group label {
+    display: block;
+    font-size: 0.85rem;
+    color: var(--cor-mutado);
+    margin-bottom: 8px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.input-group input, .input-group select, .form-card textarea {
+    width: 100%;
+    padding: 12px 16px;
+    background: rgba(0, 0, 0, 0.4);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    color: #ffffff;
+    font-size: 0.95rem;
+    transition: var(--transicao);
+}
+
+.input-group input:focus, .input-group select:focus, .form-card textarea:focus {
+    outline: none;
+    border-color: var(--tactical-gold);
+    box-shadow: 0 0 0 3px rgba(201, 157, 66, 0.2);
+    background: rgba(0, 0, 0, 0.6);
+}
+
+/* Botões com Animação Glow */
+.btn-login, .btn-aprovar, .btn-recusar {
+    width: 100%;
+    padding: 14px;
+    border: none;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 600;
+    letter-spacing: 1px;
+    cursor: pointer;
+    transition: var(--transicao);
+    text-transform: uppercase;
+}
+
+.btn-login {
+    background: linear-gradient(135deg, var(--tactical-gold), #a37a2c);
+    color: #000000;
+    margin-top: 10px;
+    box-shadow: 0 4px 15px rgba(201, 157, 66, 0.3);
+}
+
+.btn-login:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(201, 157, 66, 0.5);
+    background: linear-gradient(135deg, var(--tactical-gold-hover), var(--tactical-gold));
+}
+
+.btn-login:active { transform: translateY(0); }
+
+.register-area {
+    margin-top: 25px;
+    font-size: 0.9rem;
+    color: var(--cor-mutado);
+}
+
+.register-area a {
+    color: var(--tactical-gold);
+    text-decoration: none;
+    font-weight: 500;
+    transition: var(--transicao);
+}
+
+.register-area a:hover { color: #ffffff; text-shadow: 0 0 8px var(--tactical-gold); }
+
+/* Caixa de Alertas */
+.alert-box {
+    background: rgba(218, 54, 55, 0.15);
+    border-left: 4px solid var(--btn-perigo);
+    padding: 12px;
+    border-radius: 6px;
+    margin-bottom: 20px;
+    color: #ff9494;
+    font-size: 0.85rem;
+    text-align: left;
+    animation: fadeInUp 0.3s ease;
 }
 
 /* ==========================================================================
-   CARDS OPERACIONAIS (Cursos, Membros, Estatísticas)
+   LAYOUT DO PAINEL (Sidebar + Conteúdo Principal)
    ========================================================================== */
-.card-tatico {
+.sidebar {
+    position: fixed;
+    top: 0; left: 0; bottom: 0;
+    width: var(--sidebar-width);
+    background: rgba(15, 18, 23, 0.95);
+    backdrop-filter: blur(10px);
+    border-right: 1px solid var(--borda-card);
+    padding: 30px 20px;
+    z-index: 100;
+}
+
+.sidebar-header h2 {
+    color: #ffffff;
+    font-size: 1.3rem;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-align: center;
+    margin-bottom: 40px;
+    border-bottom: 2px solid var(--tactical-gold);
+    padding-bottom: 15px;
+}
+
+.sidebar ul { list-style: none; }
+
+.sidebar ul li { margin-bottom: 8px; }
+
+.sidebar ul li a {
+    display: block;
+    padding: 12px 16px;
+    color: var(--cor-mutado);
+    text-decoration: none;
+    font-weight: 500;
+    border-radius: 8px;
+    transition: var(--transicao);
+    font-size: 0.95rem;
+}
+
+/* Animação hover nos itens do menu lateral */
+.sidebar ul li a:hover {
+    color: #ffffff;
+    background: rgba(255, 255, 255, 0.05);
+    transform: translateX(5px);
+}
+
+/* Destacar página ativa (Simulação baseada no link) */
+.sidebar ul li a:focus, .sidebar ul li a:active {
+    background: rgba(201, 157, 66, 0.1);
+    color: var(--tactical-gold);
+}
+
+.main-content {
+    margin-left: var(--sidebar-width);
+    padding: 40px;
+    animation: fadeInUp 0.5s ease-out;
+}
+
+.main-content h1 {
+    font-size: 2rem;
+    font-weight: 700;
+    margin-bottom: 10px;
+    color: #ffffff;
+}
+
+.header p {
+    color: var(--cor-mutado);
+    margin-bottom: 40px;
+    font-size: 1rem;
+}
+
+/* ==========================================================================
+   DASHBOARD CARDS
+   ========================================================================== */
+.dashboard-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 25px;
+    margin-bottom: 40px;
+}
+
+.card-status {
     background: var(--bg-card);
-    border: 1px solid var(--cor-borda);
-    border-left: 4px solid var(--tactical-glow); /* Detalhe lateral impactante */
-    border-radius: 6px;
-    padding: 25px;
-    margin-bottom: 20px;
-    transition: var(--transicao-suave);
+    backdrop-filter: blur(8px);
+    border: 1px solid var(--borda-card);
+    padding: 30px;
+    border-radius: 14px;
+    transition: var(--transicao);
     position: relative;
     overflow: hidden;
 }
 
-/* Efeito de Hover agressivo e moderno */
-.card-tatico:hover {
-    transform: translateY(-5px) scale(1.01);
-    border-color: var(--tactical-glow);
-    box-shadow: 0 10px 25px rgba(0, 210, 255, 0.15);
+.card-status:hover {
+    transform: translateY(-5px);
+    border-color: rgba(201, 157, 66, 0.3);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
 }
 
-/* Subtítulos ou Patentes dentro dos cards */
-.badge-patente {
-    background: var(--tactical-blue);
-    color: var(--texto-secundario);
-    padding: 4px 10px;
-    font-size: 0.75rem;
-    font-weight: bold;
-    text-transform: uppercase;
-    border-radius: 4px;
-    letter-spacing: 1px;
+.card-status::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; width: 4px; height: 100%;
+    background: var(--tactical-gold);
 }
 
-/* ==========================================================================
-   FORMULÁRIOS E INPUTS (Login, Criar Curso, Adicionar Membro)
-   ========================================================================== */
-.form-grupo {
-    margin-bottom: 20px;
-}
-
-.form-grupo label {
-    display: block;
-    font-size: 0.85rem;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    margin-bottom: 8px;
-    color: var(--texto-mutado);
-}
-
-.input-tatico {
-    width: 100%;
-    padding: 12px 16px;
-    background-color: rgba(11, 12, 16, 0.8);
-    border: 1px solid var(--cor-borda);
-    border-radius: 4px;
-    color: var(--texto-principal);
+.card-status h3 {
     font-size: 1rem;
-    transition: var(--transicao-suave);
-}
-
-.input-tatico:focus {
-    outline: none;
-    border-color: var(--tactical-glow);
-    box-shadow: 0 0 10px rgba(0, 210, 255, 0.3);
-    background-color: var(--bg-principal);
-}
-
-/* ==========================================================================
-   BOTÕES DEAÇÃO (Com animação de pulso e preenchimento)
-   ========================================================================== */
-.btn-tatico {
-    display: inline-block;
-    padding: 12px 24px;
-    background: var(--tactical-blue);
-    color: var(--texto-principal);
-    border: 1px solid var(--tactical-glow);
-    border-radius: 4px;
-    font-weight: bold;
+    color: var(--cor-mutado);
     text-transform: uppercase;
     letter-spacing: 1px;
-    cursor: pointer;
-    transition: var(--transicao-suave);
-    text-decoration: none;
-    text-align: center;
+    margin-bottom: 15px;
 }
 
-.btn-tatico:hover {
-    background: var(--tactical-glow);
-    color: var(--bg-principal);
-    box-shadow: 0 0 15px var(--tactical-glow);
+.card-status .number {
+    font-size: 3rem;
+    font-weight: 700;
+    color: #ffffff;
+    line-height: 1;
+    margin-bottom: 10px;
 }
 
-/* Botão de Perigo / Advertência */
-.btn-perigo {
-    background: transparent;
-    border: 1px solid var(--alerta-vermelho);
-    color: var(--alerta-vermelho);
-}
-
-.btn-perigo:hover {
-    background: var(--alerta-vermelho);
-    color: var(--texto-principal);
-    box-shadow: 0 0 15px var(--alerta-vermelho);
+.card-status p {
+    font-size: 0.85rem;
+    color: var(--cor-mutado);
 }
 
 /* ==========================================================================
-   TABELAS DE MEMBROS / LISTAGENS
+   CURSOS / CARDS DE CONTEÚDO
    ========================================================================== */
-.tabela-container {
-    overflow-x: auto;
+.card {
     background: var(--bg-card);
-    border: 1px solid var(--cor-borda);
-    border-radius: 6px;
+    border: 1px solid var(--borda-card);
+    padding: 25px;
+    border-radius: 12px;
+    margin-bottom: 25px;
+    backdrop-filter: blur(8px);
+    transition: var(--transicao);
 }
 
-.tabela-tatica {
+.card:hover {
+    border-color: rgba(255, 255, 255, 0.15);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+}
+
+.card h2 { color: var(--tactical-gold); margin-bottom: 10px; font-size: 1.4rem; }
+.card p { margin-bottom: 10px; color: #e1e4e8; font-size: 0.95rem; }
+.card strong { color: #ffffff; }
+
+/* Formulário de curso dentro do card */
+.card form { margin: 15px 0; }
+
+/* ==========================================================================
+   TABELAS DESIGN REVOLUCIONADO
+   ========================================================================== */
+.tabela {
     width: 100%;
     border-collapse: collapse;
-    text-align: left;
+    margin-top: 25px;
+    background: var(--bg-card);
+    border-radius: 10px;
+    overflow: hidden;
+    border: 1px solid var(--borda-card);
 }
 
-.tabela-tatica th {
-    background-color: rgba(0, 0, 0, 0.4);
-    padding: 15px;
+.tabela th {
+    background: rgba(0, 0, 0, 0.4);
+    color: var(--tactical-gold);
+    text-align: left;
+    padding: 16px;
     font-size: 0.85rem;
     text-transform: uppercase;
-    color: var(--texto-secundario);
-    border-bottom: 2px solid var(--cor-borda);
+    letter-spacing: 1px;
+    font-weight: 600;
 }
 
-.tabela-tatica td {
-    padding: 15px;
-    border-bottom: 1px solid var(--cor-borda);
-    transition: var(--transicao-suave);
+.tabela td {
+    padding: 16px;
+    color: #e1e4e8;
+    border-bottom: 1px solid var(--borda-card);
+    font-size: 0.95rem;
 }
 
-.tabela-tatica tbody tr:hover {
-    background-color: rgba(255, 255, 255, 0.02);
-}
+.tabela tr:last-child td { border-bottom: none; }
 
-/* ==========================================================================
-   ALERTAS E NOTIFICAÇÕES (Flashes do Flask)
-   ========================================================================== */
-.alerta-flash {
-    padding: 15px 20px;
-    margin-bottom: 25px;
-    border-radius: 4px;
-    border-left: 5px solid transparent;
-    animation: fadeIn 0.4s ease-out;
-}
-
-.alerta-sucesso {
-    background: rgba(46, 204, 113, 0.1);
-    border-color: var(--sucesso-verde);
-    color: var(--sucesso-verde);
-}
-
-.alerta-erro {
-    background: rgba(231, 76, 60, 0.1);
-    border-color: var(--alerta-vermelho);
-    color: var(--alerta-vermelho);
+.tabela tr:hover td {
+    background: rgba(255, 255, 255, 0.02);
 }
 
 /* ==========================================================================
-   RESPONSIVIDADE
+   BOTÕES DE AÇÃO INTERNOS
    ========================================================================== */
-@media (max-width: 768px) {
-    .dashboard-layout {
-        flex-direction: column;
-    }
-    
-    .sidebar {
-        width: 100%;
-        border-right: none;
-        border-bottom: 2px solid var(--cor-borda);
-    }
-    
-    .conteudo-principal {
-        padding: 20px;
-    }
+.btn-aprovar {
+    background: var(--btn-sucesso);
+    color: #ffffff;
+    width: auto;
+    padding: 8px 20px;
+    font-size: 0.85rem;
+}
+.btn-aprovar:hover {
+    background: var(--btn-sucesso-hover);
+    transform: translateY(-1px);
+}
+
+.btn-recusar {
+    background: var(--btn-perigo);
+    color: #ffffff;
+    width: auto;
+    padding: 8px 20px;
+    font-size: 0.85rem;
+}
+.btn-recusar:hover {
+    background: var(--btn-perigo-hover);
+    transform: translateY(-1px);
+}
+
+/* Formulários de criação em cartões separados */
+.form-card {
+    background: var(--bg-card);
+    border: 1px solid var(--borda-card);
+    padding: 30px;
+    border-radius: 12px;
+    max-width: 600px;
+    margin-bottom: 30px;
+}
+
+.form-card label {
+    display: block;
+    margin-bottom: 8px;
+    font-size: 0.9rem;
+    color: var(--cor-mutado);
+    margin-top: 15px;
+}
+.form-card label:first-child { margin-top: 0; }
+
+.form-card textarea {
+    height: 100px;
+    resize: none;
 }
