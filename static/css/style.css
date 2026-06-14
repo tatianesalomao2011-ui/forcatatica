@@ -1,118 +1,267 @@
 /* ==========================================================================
-   SISTEMA DE COMANDO E CONTROLE CENTRAL - FORÇA TÁTICA PM
-   DIRETRIZES DE DESIGN: PADRÃO CROMÁTICO OFICIAL DE PATRULHAMENTO TÁTICO
+   CONFIGURAÇÕES GERAIS E VARIÁVEIS (TEMA FORÇA TÁTICA / BLACK OPS)
    ========================================================================== */
-
-@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Poppins:wght@300;400;500;600;700;800&display=swap');
-
 :root {
-    /* Paleta Cromática Autêntica da Força Tática */
-    --bg-principal: #0b0d10;                   /* Cinza-Escuro Midnight Ops */
-    --bg-tactical-card: rgba(18, 22, 28, 0.85); /* Cinza-Asfalto da Viatura */
-    --bg-input: rgba(8, 10, 13, 0.9);           /* Preto Camuflagem */
-    
-    /* Cores de Identidade da Unidade */
-    --branco-militar: #ffffff;                  /* Branco dos Grafismos e Brasão */
-    --cinza-tatico-claro: #ccd2db;              /* Cinza das Faixas de Patrulha */
-    --cinza-borda-foco: #636e7b;                /* Cinza-Aço Escovado */
-    
-    --cinza-camuflagem: #252d37;
-    --cinza-borda: rgba(255, 255, 255, 0.05);
-    
-    --cor-texto: #f1f3f5;                       /* Texto de Alta Visibilidade */
-    --cor-subtexto: #9aa5b3;                    /* Subtexto Operacional */
-    
-    /* Indicadores de Status e Alerta (Padrão de Emergência Giroflex) */
-    --btn-vermelho-alerta: #b71c1c;             /* Vermelho Oficial Força Tática */
-    --btn-vermelho-hover: #e53935;
-    --vermelho-glow: rgba(183, 28, 28, 0.4);
-    
-    --btn-verde-comissao: #2e7d32;
-    --btn-verde-hover: #388e3c;
-    
-    /* Estrutura */
-    --sidebar-largura: 280px;
-    --shadow-blackout: 0 20px 50px rgba(0, 0, 0, 0.9);
-    --transicao-tatica: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    --bg-principal: #0b0c10;       /* Preto Absoluto / Operacional */
+    --bg-card: #1f2833;            /* Cinza Carbono Escuro */
+    --cor-borda: #2c3540;           /* Linha de separação sutil */
+    --tactical-blue: #1f4068;       /* Azul Tático Noturno */
+    --tactical-glow: #00d2ff;       /* Azul de Destaque / Neon Operacional */
+    --texto-principal: #ffffff;    /* Branco Puro */
+    --texto-secundario: #c5a059;   /* Dourado Velho (Excelente para patentes/destaques) */
+    --texto-mutado: #95a5a6;       /* Cinza para textos menos importantes */
+    --alerta-vermelho: #e74c3c;    /* Vermelho para advertências/perigo */
+    --sucesso-verde: #2ecc71;      /* Verde para certificados/sucesso */
+    --fonte-principal: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    --transicao-suave: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
 }
 
-/* ==========================================================================
-   RESET & CONFIGURAÇÕES BASE
-   ========================================================================== */
 * {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
-    font-family: 'Poppins', sans-serif;
 }
 
 body {
     background-color: var(--bg-principal);
-    color: var(--cor-texto);
-    min-height: 100vh;
+    color: var(--texto-principal);
+    font-family: var(--fonte-principal);
+    line-height: 1.6;
     overflow-x: hidden;
-    position: relative;
-    
-    /* PAPEL DE PAREDE: Viatura da Força Tática em Operação Noturna */
-    background-image: linear-gradient(rgba(11, 13, 16, 0.92), rgba(8, 10, 13, 0.97)), 
-                      url('https://images.unsplash.com/photo-1566908829749-34baec148a0a?q=80&w=1920'); 
-    background-size: cover;
-    background-position: center;
-    background-attachment: fixed;
-}
-
-/* Customização da Barra de Rolagem */
-::-webkit-scrollbar {
-    width: 8px;
-    height: 8px;
-}
-::-webkit-scrollbar-track {
-    background: var(--bg-principal);
-}
-::-webkit-scrollbar-thumb {
-    background: var(--cinza-camuflagem);
-    border-radius: 4px;
-    border: 1px solid var(--cinza-tatico-claro);
-}
-::-webkit-scrollbar-thumb:hover {
-    background: var(--btn-vermelho-alerta);
 }
 
 /* ==========================================================================
-   ANIMAÇÕES MILITARES (KEYFRAMES)
+   ANIMAÇÕES (The Good Stuff)
    ========================================================================== */
-@keyframes entradaTatica {
-    from {
-        opacity: 0;
-        transform: translateY(15px);
-        filter: blur(3px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-        filter: blur(0);
-    }
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
 }
 
-@keyframes scanLinha {
-    0% { transform: translateY(-100%); }
-    100% { transform: translateY(100%); }
+@keyframes pulseGlow {
+    0% { box-shadow: 0 0 5px rgba(0, 210, 255, 0.2); }
+    50% { box-shadow: 0 0 20px rgba(0, 210, 255, 0.6); }
+    100% { box-shadow: 0 0 5px rgba(0, 210, 255, 0.2); }
+}
+
+@keyframes scanline {
+    0% { background-position: 0 0; }
+    100% { background-position: 0 100%; }
+}
+
+/* Classe global para aplicar entrada suave nas páginas */
+.anima-entrada {
+    animation: fadeIn 0.6s ease-out forwards;
 }
 
 /* ==========================================================================
-   TELA DE ACESSO (LOGIN / REGISTRO)
+   ESTRUTURA BASE E DASHBOARD
    ========================================================================== */
-.login-container, .register-container {
+.container {
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+/* Se você usar uma Sidebar para o painel */
+.dashboard-layout {
     display: flex;
-    justify-content: center;
-    align-items: center;
     min-height: 100vh;
-    padding: 30px;
 }
 
-.login-card, .register-card {
-    background: var(--bg-tactical-card);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-    border: 1px solid var(--cinza-borda);
-    border-top: 4px solid var(--btn-vermelho-alerta); /* Linha vermelha
+.sidebar {
+    width: 260px;
+    background-color: var(--bg-card);
+    border-right: 2px solid var(--cor-borda);
+    padding: 30px 20px;
+}
+
+.conteudo-principal {
+    flex: 1;
+    padding: 40px;
+    background-image: linear-gradient(rgba(11, 12, 16, 0.95), rgba(11, 12, 16, 0.95));
+}
+
+/* ==========================================================================
+   CARDS OPERACIONAIS (Cursos, Membros, Estatísticas)
+   ========================================================================== */
+.card-tatico {
+    background: var(--bg-card);
+    border: 1px solid var(--cor-borda);
+    border-left: 4px solid var(--tactical-glow); /* Detalhe lateral impactante */
+    border-radius: 6px;
+    padding: 25px;
+    margin-bottom: 20px;
+    transition: var(--transicao-suave);
+    position: relative;
+    overflow: hidden;
+}
+
+/* Efeito de Hover agressivo e moderno */
+.card-tatico:hover {
+    transform: translateY(-5px) scale(1.01);
+    border-color: var(--tactical-glow);
+    box-shadow: 0 10px 25px rgba(0, 210, 255, 0.15);
+}
+
+/* Subtítulos ou Patentes dentro dos cards */
+.badge-patente {
+    background: var(--tactical-blue);
+    color: var(--texto-secundario);
+    padding: 4px 10px;
+    font-size: 0.75rem;
+    font-weight: bold;
+    text-transform: uppercase;
+    border-radius: 4px;
+    letter-spacing: 1px;
+}
+
+/* ==========================================================================
+   FORMULÁRIOS E INPUTS (Login, Criar Curso, Adicionar Membro)
+   ========================================================================== */
+.form-grupo {
+    margin-bottom: 20px;
+}
+
+.form-grupo label {
+    display: block;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 8px;
+    color: var(--texto-mutado);
+}
+
+.input-tatico {
+    width: 100%;
+    padding: 12px 16px;
+    background-color: rgba(11, 12, 16, 0.8);
+    border: 1px solid var(--cor-borda);
+    border-radius: 4px;
+    color: var(--texto-principal);
+    font-size: 1rem;
+    transition: var(--transicao-suave);
+}
+
+.input-tatico:focus {
+    outline: none;
+    border-color: var(--tactical-glow);
+    box-shadow: 0 0 10px rgba(0, 210, 255, 0.3);
+    background-color: var(--bg-principal);
+}
+
+/* ==========================================================================
+   BOTÕES DEAÇÃO (Com animação de pulso e preenchimento)
+   ========================================================================== */
+.btn-tatico {
+    display: inline-block;
+    padding: 12px 24px;
+    background: var(--tactical-blue);
+    color: var(--texto-principal);
+    border: 1px solid var(--tactical-glow);
+    border-radius: 4px;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    cursor: pointer;
+    transition: var(--transicao-suave);
+    text-decoration: none;
+    text-align: center;
+}
+
+.btn-tatico:hover {
+    background: var(--tactical-glow);
+    color: var(--bg-principal);
+    box-shadow: 0 0 15px var(--tactical-glow);
+}
+
+/* Botão de Perigo / Advertência */
+.btn-perigo {
+    background: transparent;
+    border: 1px solid var(--alerta-vermelho);
+    color: var(--alerta-vermelho);
+}
+
+.btn-perigo:hover {
+    background: var(--alerta-vermelho);
+    color: var(--texto-principal);
+    box-shadow: 0 0 15px var(--alerta-vermelho);
+}
+
+/* ==========================================================================
+   TABELAS DE MEMBROS / LISTAGENS
+   ========================================================================== */
+.tabela-container {
+    overflow-x: auto;
+    background: var(--bg-card);
+    border: 1px solid var(--cor-borda);
+    border-radius: 6px;
+}
+
+.tabela-tatica {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: left;
+}
+
+.tabela-tatica th {
+    background-color: rgba(0, 0, 0, 0.4);
+    padding: 15px;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    color: var(--texto-secundario);
+    border-bottom: 2px solid var(--cor-borda);
+}
+
+.tabela-tatica td {
+    padding: 15px;
+    border-bottom: 1px solid var(--cor-borda);
+    transition: var(--transicao-suave);
+}
+
+.tabela-tatica tbody tr:hover {
+    background-color: rgba(255, 255, 255, 0.02);
+}
+
+/* ==========================================================================
+   ALERTAS E NOTIFICAÇÕES (Flashes do Flask)
+   ========================================================================== */
+.alerta-flash {
+    padding: 15px 20px;
+    margin-bottom: 25px;
+    border-radius: 4px;
+    border-left: 5px solid transparent;
+    animation: fadeIn 0.4s ease-out;
+}
+
+.alerta-sucesso {
+    background: rgba(46, 204, 113, 0.1);
+    border-color: var(--sucesso-verde);
+    color: var(--sucesso-verde);
+}
+
+.alerta-erro {
+    background: rgba(231, 76, 60, 0.1);
+    border-color: var(--alerta-vermelho);
+    color: var(--alerta-vermelho);
+}
+
+/* ==========================================================================
+   RESPONSIVIDADE
+   ========================================================================== */
+@media (max-width: 768px) {
+    .dashboard-layout {
+        flex-direction: column;
+    }
+    
+    .sidebar {
+        width: 100%;
+        border-right: none;
+        border-bottom: 2px solid var(--cor-borda);
+    }
+    
+    .conteudo-principal {
+        padding: 20px;
+    }
+}
