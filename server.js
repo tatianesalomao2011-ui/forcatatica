@@ -12,9 +12,13 @@ app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+// STATIC
 app.use(express.static(path.join(__dirname, "public")));
 
-/* ROTAS */
+/* =========================
+   ROTAS API
+========================= */
+
 const authRoutes = require("./routes/authRoutes");
 const policialRoutes = require("./routes/policialRoutes");
 const advertenciaRoutes = require("./routes/advertenciaRoutes");
@@ -27,36 +31,56 @@ app.use("/api/advertencias", advertenciaRoutes);
 app.use("/api/certificados", certificadoRoutes);
 app.use("/api/cursos", cursoRoutes);
 
-/* DASHBOARD */
+/* =========================
+   DASHBOARD (RESUMO)
+========================= */
+
 const db = require("./database/database");
 
 app.get("/api/dashboard", (req, res) => {
-    db.get("SELECT COUNT(*) as total FROM policiais", (e1, p) => {
-        db.get("SELECT COUNT(*) as total FROM advertencias", (e2, a) => {
-            db.get("SELECT COUNT(*) as total FROM certificados", (e3, c) => {
-                db.get("SELECT COUNT(*) as total FROM cursos", (e4, cu) => {
 
-                    res.json({
-                        policiais: p.total,
-                        advertencias: a.total,
-                        certificados: c.total,
-                        cursos: cu.total
+    db.serialize(() => {
+
+        db.get("SELECT COUNT(*) as total FROM policiais", (err, p) => {
+
+            db.get("SELECT COUNT(*) as total FROM advertencias", (err2, a) => {
+
+                db.get("SELECT COUNT(*) as total FROM certificados", (err3, c) => {
+
+                    db.get("SELECT COUNT(*) as total FROM cursos", (err4, cu) => {
+
+                        res.json({
+                            policiais: p.total,
+                            advertencias: a.total,
+                            certificados: c.total,
+                            cursos: cu.total
+                        });
+
                     });
 
                 });
+
             });
+
         });
+
     });
 });
 
-/* FRONT */
+/* =========================
+   FRONTEND SPA
+========================= */
+
 app.get("*", (req, res) => {
     res.sendFile(path.join(__dirname, "public", "index.html"));
 });
 
-/* START (IMPORTANTE) */
+/* =========================
+   START SERVER
+========================= */
+
 const PORT = process.env.PORT || 3000;
 
-app.listen(PORT, "0.0.0.0", () => {
-    console.log("Servidor rodando na porta", PORT);
+app.listen(PORT, () => {
+    console.log(`Servidor rodando na porta ${PORT}`);
 });
