@@ -2,8 +2,8 @@
    CONFIGURAÇÕES GERAIS E VARIÁVEIS (Tema Tático Militar)
    ========================================================================== */
 :root {
-    --bg-principal: #000000;
-    --bg-card: rgba(22, 27, 34, 0.8);
+    --bg-principal: #030303;
+    --bg-card: rgba(17, 21, 27, 0.8);
     --borda-card: rgba(255, 255, 255, 0.08);
     --cor-texto: #f0f3f6;
     --cor-mutado: #8b949e;
