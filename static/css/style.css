@@ -2,17 +2,17 @@
    CONFIGURAÇÕES GERAIS E VARIÁVEIS (Tema Tático Militar)
    ========================================================================== */
 :root {
-    --bg-principal: #0b0d10;
+    --bg-principal: #000000;
     --bg-card: rgba(22, 27, 34, 0.8);
     --borda-card: rgba(255, 255, 255, 0.08);
     --cor-texto: #f0f3f6;
     --cor-mutado: #8b949e;
-    --tactical-gold: #c99d42;
-    --tactical-gold-hover: #e0b35a;
+    --tactical-gold: #353333;
+    --tactical-gold-hover: #272727;
     --btn-sucesso: #238636;
     --btn-sucesso-hover: #2ea043;
-    --btn-perigo: #da3637;
-    --btn-perigo-hover: #f85149;
+    --btn-perigo: #df0c0c;
+    --btn-perigo-hover: #72130e;
     --sidebar-width: 260px;
     --transicao: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
