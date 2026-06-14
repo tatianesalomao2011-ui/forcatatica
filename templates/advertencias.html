@@ -1,111 +1,150 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
+
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Advertências - Força Tática</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+<meta charset="UTF-8">
+
+<meta name="viewport"
+content="width=device-width, initial-scale=1.0">
+
+<title>Advertências</title>
+
+<link rel="stylesheet"
+href="{{ url_for('static', filename='css/style.css') }}">
+
 </head>
+
 <body>
 
-    <aside class="sidebar">
-        <div class="sidebar-header">
-            <h2><i class="fa-solid fa-shield-halved"></i> FORÇA TÁTICA</h2>
-        </div>
-        <nav>
-            <ul>
-                <li><a href="/dashboard"><i class="fa-solid fa-chart-pie"></i> Dashboard</a></li>
-                <li><a href="/membros"><i class="fa-solid fa-users"></i> Membros</a></li>
-                <li><a href="/advertencias" class="active"><i class="fa-solid fa-triangle-exclamation"></i> Advertências</a></li>
-                <li><a href="/certificados"><i class="fa-solid fa-file-certificate"></i> Certificados</a></li>
-                <li><a href="/cursos"><i class="fa-solid fa-graduation-cap"></i> Cursos</a></li>
-                <li><a href="/pendentes"><i class="fa-solid fa-clock"></i> Pendentes</a></li>
-                <li class="logout"><a href="/logout"><i class="fa-solid fa-right-from-bracket"></i> Sair</a></li>
-            </ul>
-        </nav>
-    </aside>
+<div class="sidebar">
 
-    <main class="main-content">
-        
-        <header class="content-header">
-            <h1>Gerenciamento de Advertências</h1>
-        </header>
+    <div class="sidebar-header">
+        <h2>FORÇA TÁTICA</h2>
+    </div>
 
-        <section class="form-section">
-            <div class="form-card">
-                <h2>Aplicar Nova Advertência</h2>
-                
-                <form action="/aplicar_advertencia" method="POST">
-                    <div class="form-group">
-                        <label for="usuario_id">Membro Penalizado</label>
-                        <select name="usuario_id" id="usuario_id" required>
-                            <option value="" disabled selected>Selecione o policial...</option>
-                            {% for usuario in usuarios %}
-                                <option value="{{ usuario[0] }}">{{ usuario[1] }} - {{ usuario[2] }}</option>
-                            {% endfor %}
-                        </select>
-                    </div>
+    <ul>
 
-                    <div class="form-group">
-                        <label for="motivo">Motivo do Bloqueio / Advertência</label>
-                        <textarea 
-                            name="motivo" 
-                            id="motivo" 
-                            placeholder="Descreva detalhadamente o motivo da advertência..." 
-                            rows="4" 
-                            required></textarea>
-                    </div>
+        <li><a href="/dashboard">Dashboard</a></li>
 
-                    <button class="btn-danger" type="submit">
-                        <i class="fa-solid fa-gavel"></i> Aplicar Advertência
-                    </button>
-                </form>
-            </div>
-        </section>
+        <li><a href="/membros">Membros</a></li>
 
-        <section class="table-section">
-            <h2>Histórico de Últimas Advertências</h2>
-            
-            <div class="table-responsive">
-                <table class="tabela">
-                    <thead>
-                        <tr>
-                            <th>ID</th>
-                            <th>Policial</th>
-                            <th>Motivo</th>
-                            <th>Aplicador</th>
-                            <th>Data</th>
-                            <th class="text-center">Ações</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for a in advertencias %}
-                            <tr>
-                                <td>#{{ a[0] }}</td>
-                                <td><strong>{{ a[5] }}</strong></td>
-                                <td>{{ a[2] }}</td>
-                                <td>{{ a[3] }}</td>
-                                <td>{{ a[4] }}</td>
-                                <td class="text-center">
-                                    <form action="/remover_advertencia/{{ a[0] }}" method="POST" onsubmit="return confirm('Tem certeza que deseja remover esta advertência?');">
-                                        <button class="btn-action-delete" title="Remover Advertência">
-                                            <i class="fa-solid fa-trash-can"></i> Remover
-                                        </button>
-                                    </form>
-                                </td>
-                            </tr>
-                        {% else %}
-                            <tr>
-                                <td colspan="6" class="text-muted text-center">Nenhuma advertência registrada até o momento.</td>
-                            </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
-        </section>
+        <li><a href="/advertencias">Advertências</a></li>
 
-    </main>
+        <li><a href="/certificados">Certificados</a></li>
+
+        <li><a href="/cursos">Cursos</a></li>
+
+        <li><a href="/pendentes">Pendentes</a></li>
+
+        <li><a href="/logout">Sair</a></li>
+
+    </ul>
+
+</div>
+
+<div class="main-content">
+
+<h1>Aplicar Advertência</h1>
+
+<form action="/aplicar_advertencia" method="POST">
+
+<div class="form-card">
+
+<label>Membro</label>
+
+<select name="usuario_id" required>
+
+{% for usuario in usuarios %}
+
+<option value="{{ usuario[0] }}">
+{{ usuario[1] }} - {{ usuario[2] }}
+</option>
+
+{% endfor %}
+
+</select>
+
+<label>Motivo</label>
+
+<textarea
+name="motivo"
+required>
+</textarea>
+
+<button
+class="btn-aprovar"
+type="submit">
+
+Aplicar Advertência
+
+</button>
+
+</div>
+
+</form>
+
+<h2>Últimas Advertências</h2>
+
+<table class="tabela">
+
+<thead>
+
+<tr>
+
+<th>ID</th>
+<th>Policial</th>
+<th>Motivo</th>
+<th>Aplicador</th>
+<th>Data</th>
+<th>Ação</th>
+
+</tr>
+
+</thead>
+
+<tbody>
+
+{% for a in advertencias %}
+
+<tr>
+
+<td>{{ a[0] }}</td>
+
+<td>{{ a[5] }}</td>
+
+<td>{{ a[2] }}</td>
+
+<td>{{ a[3] }}</td>
+
+<td>{{ a[4] }}</td>
+
+<td>
+
+<form
+action="/remover_advertencia/{{ a[0] }}"
+method="POST">
+
+<button
+class="btn-recusar">
+
+Remover
+
+</button>
+
+</form>
+
+</td>
+
+</tr>
+
+{% endfor %}
+
+</tbody>
+
+</table>
+
+</div>
 
 </body>
 </html>
