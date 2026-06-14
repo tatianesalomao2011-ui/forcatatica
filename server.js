@@ -57,6 +57,14 @@ app.get("*", (req, res) => {
 /* START (IMPORTANTE) */
 const PORT = process.env.PORT || 3000;
 
-app.listen(PORT, "0.0.0.0", () => {
-    console.log("Servidor rodando na porta", PORT);
+app.get("/", (req, res) => {
+    res.send("Servidor Força Tática ONLINE");
+});
+
+app.get("/api/status", (req, res) => {
+    res.json({ status: "online" });
+});
+
+app.listen(PORT, () => {
+    console.log(`Servidor rodando na porta ${PORT}`);
 });
