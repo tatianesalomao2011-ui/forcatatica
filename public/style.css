@@ -1,0 +1,397 @@
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:'Poppins',sans-serif;
+}
+
+body{
+    background:#111;
+    color:#fff;
+    overflow-x:hidden;
+}
+
+.hidden{
+    display:none !important;
+}
+
+/* LOGIN */
+
+.login-page{
+    position:relative;
+    width:100%;
+    height:100vh;
+    background:url("assets/background.jpg");
+    background-size:cover;
+    background-position:center;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+}
+
+.overlay{
+    position:absolute;
+    inset:0;
+    background:rgba(0,0,0,0.75);
+}
+
+.login-container{
+    position:relative;
+    z-index:2;
+    width:420px;
+    padding:40px;
+    border-radius:20px;
+    backdrop-filter:blur(10px);
+    background:rgba(20,20,20,0.75);
+    border:1px solid rgba(255,255,255,.15);
+    box-shadow:0 0 30px rgba(255,0,0,.25);
+}
+
+.login-header{
+    text-align:center;
+    margin-bottom:30px;
+}
+
+.login-header h1{
+    color:#ff2b2b;
+    font-size:32px;
+    margin-bottom:10px;
+}
+
+.login-header p{
+    color:#d8d8d8;
+}
+
+.input-group{
+    display:flex;
+    flex-direction:column;
+    margin-bottom:18px;
+}
+
+.input-group label{
+    margin-bottom:8px;
+}
+
+.input-group input{
+    padding:14px;
+    border:none;
+    outline:none;
+    border-radius:10px;
+    background:#2c2c2c;
+    color:white;
+}
+
+.login-btn{
+    width:100%;
+    padding:15px;
+    border:none;
+    border-radius:10px;
+    cursor:pointer;
+    background:#d10000;
+    color:white;
+    font-size:16px;
+    font-weight:600;
+    transition:.3s;
+}
+
+.login-btn:hover{
+    background:#ff0000;
+}
+
+/* SISTEMA */
+
+.system-page{
+    display:flex;
+    min-height:100vh;
+}
+
+.sidebar{
+    width:280px;
+    background:#161616;
+    border-right:1px solid #2e2e2e;
+    padding:25px;
+}
+
+.sidebar-logo{
+    text-align:center;
+    margin-bottom:30px;
+}
+
+.sidebar-logo h2{
+    color:#ff2f2f;
+}
+
+.sidebar nav{
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+}
+
+.menu-btn{
+    width:100%;
+    border:none;
+    padding:15px;
+    border-radius:10px;
+    cursor:pointer;
+    background:#222;
+    color:white;
+    text-align:left;
+    transition:.3s;
+}
+
+.menu-btn i{
+    margin-right:10px;
+}
+
+.menu-btn:hover{
+    background:#303030;
+}
+
+.menu-btn.active{
+    background:#c40000;
+}
+
+.logout{
+    margin-top:25px;
+}
+
+.content{
+    flex:1;
+    padding:35px;
+}
+
+.page{
+    display:none;
+}
+
+.active-page{
+    display:block;
+}
+
+.page h1{
+    margin-bottom:25px;
+}
+
+.cards-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+    gap:20px;
+}
+
+.card{
+    background:#1f1f1f;
+    border:1px solid #333;
+    border-radius:16px;
+    padding:25px;
+    transition:.3s;
+}
+
+.card:hover{
+    transform:translateY(-5px);
+}
+
+.card h3{
+    margin-bottom:10px;
+    color:#ff4040;
+}
+
+.card span{
+    font-size:32px;
+    font-weight:700;
+}
+
+.form-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit, minmax(250px, 1fr));
+    gap:15px;
+    background:#1a1a1a;
+    padding:25px;
+    border-radius:15px;
+    border:1px solid #2e2e2e;
+    margin-bottom:25px;
+}
+
+.form-grid input,
+.form-grid select{
+    padding:14px;
+    border:none;
+    outline:none;
+    border-radius:10px;
+    background:#2b2b2b;
+    color:#fff;
+    font-size:14px;
+    transition:.3s;
+}
+
+.form-grid input:focus,
+.form-grid select:focus{
+    background:#333;
+    box-shadow:0 0 0 2px #ff2b2b;
+}
+
+.form-grid button{
+    grid-column:1 / -1;
+    padding:15px;
+    border:none;
+    border-radius:12px;
+    background:#c40000;
+    color:#fff;
+    font-size:15px;
+    font-weight:600;
+    cursor:pointer;
+    transition:.3s;
+}
+
+.form-grid button:hover{
+    background:#ff0000;
+    transform:scale(1.02);
+}
+
+/* INPUT FILE (CERTIFICADOS / CURSOS) */
+
+.form-grid input[type="file"]{
+    padding:12px;
+    background:#222;
+    border:1px dashed #444;
+    cursor:pointer;
+}
+
+.form-grid input[type="file"]::file-selector-button{
+    background:#c40000;
+    border:none;
+    padding:8px 12px;
+    border-radius:8px;
+    color:#fff;
+    cursor:pointer;
+    margin-right:10px;
+}
+
+.form-grid input[type="file"]::file-selector-button:hover{
+    background:#ff0000;
+}
+.table-container{
+    background:#1a1a1a;
+    padding:20px;
+    border-radius:15px;
+    border:1px solid #2e2e2e;
+    overflow-x:auto;
+}
+
+table{
+    width:100%;
+    border-collapse:collapse;
+    min-width:700px;
+}
+
+thead{
+    background:#2a2a2a;
+}
+
+thead th{
+    padding:15px;
+    text-align:left;
+    color:#ff3b3b;
+    font-size:14px;
+}
+
+tbody td{
+    padding:14px;
+    border-bottom:1px solid #2a2a2a;
+    color:#eaeaea;
+}
+
+tbody tr:hover{
+    background:#222;
+    transition:.2s;
+}
+
+.action-btn{
+    padding:8px 12px;
+    border:none;
+    border-radius:8px;
+    cursor:pointer;
+    font-size:13px;
+    margin-right:5px;
+    transition:.3s;
+}
+
+.btn-delete{
+    background:#c40000;
+    color:#fff;
+}
+
+.btn-delete:hover{
+    background:#ff0000;
+}
+
+.btn-view{
+    background:#333;
+    color:#fff;
+}
+
+.btn-view:hover{
+    background:#555;
+}
+
+.list-item{
+    background:#1a1a1a;
+    border:1px solid #2e2e2e;
+    padding:15px;
+    border-radius:12px;
+    margin-bottom:12px;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+}
+
+.list-item:hover{
+    background:#222;
+}
+
+.list-info{
+    display:flex;
+    flex-direction:column;
+    gap:5px;
+}
+
+.list-info span{
+    font-size:13px;
+    color:#ccc;
+}
+
+.list-title{
+    font-weight:600;
+    color:#fff;
+}
+
+.remove-btn{
+    background:#c40000;
+    border:none;
+    color:#fff;
+    padding:8px 12px;
+    border-radius:8px;
+    cursor:pointer;
+    transition:.3s;
+}
+
+.remove-btn:hover{
+    background:#ff0000;
+}
+
+.card,
+.form-grid,
+.table-container,
+.login-container,
+.list-item{
+    box-shadow:0 10px 30px rgba(0,0,0,0.4);
+}
+
+.menu-btn:hover,
+.login-btn:hover,
+.form-grid button:hover{
+    box-shadow:0 0 15px rgba(255,0,0,0.4);
+}
+
+*{
+    scroll-behavior:smooth;
+}

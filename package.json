@@ -1,0 +1,24 @@
+{
+  "name": "forca-tatica-13bpm",
+  "version": "1.0.0",
+  "description": "Sistema Administrativo Força Tática 13º BPM/M",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "keywords": [
+    "forca-tatica",
+    "policia-militar",
+    "dashboard"
+  ],
+  "author": "Força Tática",
+  "license": "ISC",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^16.6.1",
+    "express": "^4.21.2",
+    "multer": "^2.0.2",
+    "sqlite3": "^5.1.7"
+  }
+}
