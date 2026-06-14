@@ -1,217 +1,221 @@
-from flask import Flask, render_template, request, redirect, session, flash, url_for
+from flask import Flask, render_template, request, redirect, session, flash, url_for, abort
 from werkzeug.security import generate_password_hash, check_password_hash
+from functools import wraps
 from datetime import datetime
 import sqlite3
 import os
 
+from config import Config, PATENTES, PATENTES_ADMIN
+
 app = Flask(__name__)
-app.secret_key = "forca_tatica_13bpm"
-
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-DB = os.path.join(BASE_DIR, "database", "database.db")
+app.config.from_object(Config)
 
 # =========================
-# BANCO DE DADOS
+# GERENCIAMENTO DE BANCO DE DADOS
 # =========================
-def conectar():
-    return sqlite3.connect(DB)
+def obter_conexao():
+    """Abre uma conexão com o banco configurada para retornar dicionários (Row)."""
+    conn = sqlite3.connect(app.config["DB_PATH"])
+    conn.row_factory = sqlite3.Row
+    return conn
 
-def criar_banco():
-    os.makedirs(os.path.dirname(DB), exist_ok=True)
-    conn = conectar()
-    cur = conn.cursor()
+def inicializar_sistema():
+    """Garante a criação da estrutura de diretórios e tabelas de forma segura."""
+    os.makedirs(os.path.dirname(app.config["DB_PATH"]), exist_ok=True)
+    
+    with obter_conexao() as conn:
+        cur = conn.cursor()
+        
+        cur.execute("""
+        CREATE TABLE IF NOT EXISTS usuarios(
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            nome TEXT NOT NULL,
+            rgpm TEXT UNIQUE NOT NULL,
+            discord_id TEXT UNIQUE NOT NULL,
+            patente TEXT NOT NULL,
+            senha TEXT NOT NULL,
+            status TEXT DEFAULT 'PENDENTE',
+            observacao TEXT DEFAULT ''
+        )""")
 
-    cur.execute("""
-    CREATE TABLE IF NOT EXISTS usuarios(
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        nome TEXT,
-        rgpm TEXT UNIQUE,
-        discord_id TEXT UNIQUE,
-        patente TEXT,
-        senha TEXT,
-        status TEXT DEFAULT 'PENDENTE',
-        observacao TEXT DEFAULT ''
-    )
-    """)
+        cur.execute("""
+        CREATE TABLE IF NOT EXISTS advertencias(
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            usuario_id INTEGER NOT NULL,
+            motivo TEXT NOT NULL,
+            aplicador TEXT NOT NULL,
+            data TEXT NOT NULL,
+            FOREIGN KEY(usuario_id) REFERENCES usuarios(id) ON DELETE CASCADE
+        )""")
 
-    cur.execute("""
-    CREATE TABLE IF NOT EXISTS advertencias(
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        usuario_id INTEGER,
-        motivo TEXT,
-        aplicador TEXT,
-        data TEXT
-    )
-    """)
+        cur.execute("""
+        CREATE TABLE IF NOT EXISTS certificados(
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            usuario_id INTEGER NOT NULL,
+            curso TEXT NOT NULL,
+            assinatura TEXT NOT NULL,
+            data TEXT NOT NULL,
+            FOREIGN KEY(usuario_id) REFERENCES usuarios(id) ON DELETE CASCADE
+        )""")
 
-    cur.execute("""
-    CREATE TABLE IF NOT EXISTS certificados(
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        usuario_id INTEGER,
-        curso TEXT,
-        assinatura TEXT,
-        data TEXT
-    )
-    """)
+        cur.execute("""
+        CREATE TABLE IF NOT EXISTS cursos(
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            nome TEXT NOT NULL,
+            descricao TEXT,
+            data_inicio TEXT,
+            data_fim TEXT,
+            criado_por TEXT NOT NULL
+        )""")
 
-    cur.execute("""
-    CREATE TABLE IF NOT EXISTS cursos(
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        nome TEXT,
-        descricao TEXT,
-        data_inicio TEXT,
-        data_fim TEXT,
-        criado_por TEXT
-    )
-    """)
+        cur.execute("""
+        CREATE TABLE IF NOT EXISTS inscricoes(
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            curso_id INTEGER NOT NULL,
+            usuario_id INTEGER NOT NULL,
+            UNIQUE(curso_id, usuario_id),
+            FOREIGN KEY(curso_id) REFERENCES cursos(id) ON DELETE CASCADE,
+            FOREIGN KEY(usuario_id) REFERENCES usuarios(id) ON DELETE CASCADE
+        )""")
+        conn.commit()
 
-    cur.execute("""
-    CREATE TABLE IF NOT EXISTS inscricoes(
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        curso_id INTEGER,
-        usuario_id INTEGER
-    )
-    """)
-
-    conn.commit()
-    conn.close()
-
-# Garante a criação das tabelas no Railway
 with app.app_context():
-    criar_banco()
+    inicializar_sistema()
 
 # =========================
-# PERMISSÕES E AUXILIARES
+# DECORADORES DE SEGURANÇA (MIDDLEWARES)
 # =========================
-def get_user():
-    if "usuario" not in session:
-        return None
-    conn = conectar()
-    cur = conn.cursor()
-    cur.execute("SELECT * FROM usuarios WHERE nome=?", (session["usuario"],))
-    user = cur.fetchone()
-    conn.close()
-    return user
+def login_requerido(f):
+    """Garante que o usuário está logado e foi aprovado pela administração."""
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if "usuario_id" not in session:
+            flash("Por favor, faça login para acessar esta página.")
+            return redirect(url_for("login"))
+        
+        with obter_conexao() as conn:
+            user = conn.execute("SELECT status FROM usuarios WHERE id = ?", (session["usuario_id"],)).fetchone()
+            
+        if not user or user["status"] != "APROVADO":
+            session.clear()
+            flash("Sua conta não possui permissão ou foi desativada.")
+            return redirect(url_for("login"))
+            
+        return f(*args, **kwargs)
+    return decorated_function
 
-def is_admin():
-    user = get_user()
-    if not user or len(user) < 5:
-        return False
-    return user[4] in ["Coronel", "Tenente Coronel", "Major"]
-
-def is_approved():
-    user = get_user()
-    if not user or len(user) < 7:
-        return False
-    return user[6] == "APROVADO"
+def admin_requerido(f):
+    """Garante que o usuário possui patente de Oficial Superior (Admin)."""
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if "usuario_id" not in session:
+            return redirect(url_for("login"))
+            
+        with obter_conexao() as conn:
+            user = conn.execute("SELECT patente, status FROM usuarios WHERE id = ?", (session["usuario_id"],)).fetchone()
+            
+        if not user or user["status"] != "APROVADO" or user["patente"] not in PATENTES_ADMIN:
+            flash("Acesso restrito aos Oficiais Superiores da Força Tática.")
+            return redirect(url_for("dashboard"))
+            
+        return f(*args, **kwargs)
+    return decorated_function
 
 # =========================
-# LOGIN / REGISTRO / SETUP
+# ROTAS DE AUTENTICAÇÃO E SETUP
 # =========================
 @app.route("/")
 def login():
-    # Sistema de proteção anti-bloqueio inicial
-    conn = conectar()
-    cur = conn.cursor()
-    cur.execute("SELECT COUNT(*) FROM usuarios")
-    total_usuarios = cur.fetchone()[0]
-    conn.close()
+    with obter_conexao() as conn:
+        total = conn.execute("SELECT COUNT(*) FROM usuarios").fetchone()[0]
     
-    if total_usuarios == 0:
+    if total == 0:
         return redirect(url_for("setup"))
-        
     return render_template("login.html")
 
 @app.route("/setup", methods=["GET", "POST"])
 def setup():
-    conn = conectar()
-    cur = conn.cursor()
-    cur.execute("SELECT COUNT(*) FROM usuarios")
-    total_usuarios = cur.fetchone()[0]
-    
-    if total_usuarios > 0:
-        conn.close()
+    with obter_conexao() as conn:
+        total = conn.execute("SELECT COUNT(*) FROM usuarios").fetchone()[0]
+        
+    if total > 0:
         return redirect(url_for("login"))
         
     if request.method == "POST":
-        senha_master = generate_password_hash("forcatatica123")
-        cur.execute("""
-        INSERT INTO usuarios (nome, rgpm, discord_id, patente, senha, status)
-        VALUES (?, ?, ?, ?, ?, ?)
-        """, ("Osvaldo Santos", "1201", "osvaldo_discord", "Tenente Coronel", senha_master, "APROVADO"))
-        conn.commit()
-        conn.close()
-        flash("Administrador master criado com sucesso! Senha padrão: forcatatica123")
+        senha_hash = generate_password_hash("forcatatica123")
+        with obter_conexao() as conn:
+            conn.execute("""
+                INSERT INTO usuarios (nome, rgpm, discord_id, patente, senha, status)
+                VALUES (?, ?, ?, ?, ?, ?)
+            """, ("Osvaldo Santos", "1201", "osvaldo_discord", "Tenente Coronel", senha_hash, "APROVADO"))
+            conn.commit()
+        flash("Administrador Master criado! Conta: Osvaldo Santos | Senha padrão: forcatatica123")
         return redirect(url_for("login"))
         
-    conn.close()
     return render_template("setup.html")
 
 @app.route("/registro")
 def registro():
-    try:
-        from config import PATENTES
-    except ImportError:
-        PATENTES = ["Soldado", "Cabo", "Sargento", "Subtenente", "Tenente", "Capitão", "Major", "Tenente Coronel", "Coronel"]
     return render_template("registro.html", patentes=PATENTES)
 
 @app.route("/registrar", methods=["POST"])
 def registrar():
-    nome = request.form["nome"]
-    rgpm = request.form["rgpm"]
-    discord = request.form["discord"]
-    patente = request.form["patente"]
-    senha = request.form["senha"]
-    confirmar = request.form["confirmar"]
+    nome = request.form.get("nome", "").strip()
+    rgpm = request.form.get("rgpm", "").strip()
+    discord = request.form.get("discord", "").strip()
+    patente = request.form.get("patente", "").strip()
+    senha = request.form.get("senha")
+    confirmar = request.form.get("confirmar")
+
+    if not all([nome, rgpm, discord, patente, senha, confirmar]):
+        return "Erro: Todos os campos são obrigatórios!", 400
+
+    if patente not in PATENTES:
+        return "Erro: Patente inválida corporativa!", 400
 
     if senha != confirmar:
-        return "Erro: A senha e a confirmação de senha não são iguais!", 400
+        return "Erro: As senhas digitadas não coincidem!", 400
 
     senha_hash = generate_password_hash(senha)
-    conn = conectar()
-    cur = conn.cursor()
-
+    
     try:
-        cur.execute("""
-        INSERT INTO usuarios (nome, rgpm, discord_id, patente, senha)
-        VALUES (?, ?, ?, ?, ?)
-        """, (nome, rgpm, discord, patente, senha_hash))
-        conn.commit()
+        with obter_conexao() as conn:
+            conn.execute("""
+                INSERT INTO usuarios (nome, rgpm, discord_id, patente, senha)
+                VALUES (?, ?, ?, ?, ?)
+            """, (nome, rgpm, discord, patente, senha_hash))
+            conn.commit()
     except sqlite3.IntegrityError:
-        conn.close()
-        return "Erro: Este RGPM ou ID do Discord já está cadastrado no sistema!", 400
-    finally:
-        conn.close()
+        return "Erro: Este RGPM ou ID do Discord já consta no sistema!", 400
 
+    flash("Cadastro enviado com sucesso! Aguarde a aprovação de um Oficial.")
     return redirect(url_for("login"))
 
 @app.route("/entrar", methods=["POST"])
 def entrar():
-    usuario = request.form["usuario"]
-    senha = request.form["senha"]
+    identificador = request.form.get("usuario", "").strip()
+    senha = request.form.get("senha")
 
-    conn = conectar()
-    cur = conn.cursor()
-    cur.execute("SELECT * FROM usuarios WHERE nome=? OR rgpm=? OR discord_id=?", (usuario, usuario, usuario))
-    user = cur.fetchone()
-    conn.close()
+    with obter_conexao() as conn:
+        user = conn.execute("""
+            SELECT * FROM usuarios 
+            WHERE nome = ? OR rgpm = ? OR discord_id = ?
+        """, (identificador, identificador, identificador)).fetchone()
 
-    if not user:
-        flash("Usuário, RGPM ou Discord ID não encontrado.")
+    if not user or not check_password_hash(user["senha"], senha):
+        flash("Credenciais incorretas. Tente novamente.")
         return redirect(url_for("login"))
 
-    if user[6] != "APROVADO":
-        if user[6] == "RECUSADO":
-            flash(f"Seu cadastro foi recusado. Motivo: {user[7]}")
+    if user["status"] != "APROVADO":
+        if user["status"] == "RECUSADO":
+            flash(f"Cadastro recusado. Motivo: {user['observacao']}")
         else:
-            flash("Seu cadastro ainda está PENDENTE de aprovação pela administração.")
+            flash("Seu cadastro está em análise pela administração.")
         return redirect(url_for("login"))
 
-    if not check_password_hash(user[5], senha):
-        flash("Senha incorreta.")
-        return redirect(url_for("login"))
-
-    session["usuario"] = user[1]
+    session["usuario_id"] = user["id"]
+    session["usuario_nome"] = user["nome"]
+    session["usuario_patente"] = user["patente"]
     return redirect(url_for("dashboard"))
 
 @app.route("/logout")
@@ -220,287 +224,225 @@ def logout():
     return redirect(url_for("login"))
 
 # =========================
-# DASHBOARD
+# DASHBOARD & MEMBROS
 # =========================
 @app.route("/dashboard")
+@login_required
 def dashboard():
-    if not is_approved():
-        return redirect(url_for("login"))
-
-    conn = conectar()
-    cur = conn.cursor()
-    cur.execute("SELECT COUNT(*) FROM usuarios WHERE status='APROVADO'")
-    membros = cur.fetchone()[0]
-    cur.execute("SELECT COUNT(*) FROM advertencias")
-    advertencias = cur.fetchone()[0]
-    cur.execute("SELECT COUNT(*) FROM certificados")
-    certificados = cur.fetchone()[0]
-    conn.close()
+    with obter_conexao() as conn:
+        membros = conn.execute("SELECT COUNT(*) FROM usuarios WHERE status='APROVADO'").fetchone()[0]
+        advertencias = conn.execute("SELECT COUNT(*) FROM advertencias").fetchone()[0]
+        certificados = conn.execute("SELECT COUNT(*) FROM certificados").fetchone()[0]
 
     return render_template("dashboard.html", membros=membros, advertencias=advertencias, certificados=certificados)
 
-# =========================
-# PENDENTES
-# =========================
-@app.route("/pendentes")
-def pendentes():
-    if not is_approved():
-        return redirect(url_for("login"))
-
-    conn = conectar()
-    cur = conn.cursor()
-    cur.execute("SELECT * FROM usuarios WHERE status='PENDENTE'")
-    usuarios = cur.fetchall()
-    conn.close()
-    return render_template("pendentes.html", usuarios=usuarios)
-
-@app.route("/aprovar/<int:id>", methods=["POST"])
-def aprovar(id):
-    if not is_approved():
-        return redirect(url_for("login"))
-
-    conn = conectar()
-    cur = conn.cursor()
-    cur.execute("UPDATE usuarios SET status='APROVADO' WHERE id=?", (id,))
-    conn.commit()
-    conn.close()
-    return redirect(url_for("pendentes"))
-
-@app.route("/recusar/<int:id>", methods=["POST"])
-def recusar(id):
-    if not is_approved():
-        return redirect(url_for("login"))
-
-    obs = request.form["observacao"]
-    conn = conectar()
-    cur = conn.cursor()
-    cur.execute("UPDATE usuarios SET status='RECUSADO', observacao=? WHERE id=?", (obs, id))
-    conn.commit()
-    conn.close()
-    return redirect(url_for("pendentes"))
-
-# =========================
-# MEMBROS
-# =========================
 @app.route("/membros")
+@login_required
 def membros():
-    if not is_approved():
-        return redirect(url_for("login"))
-
-    conn = conectar()
-    cur = conn.cursor()
-    cur.execute("SELECT * FROM usuarios WHERE status='APROVADO'")
-    usuarios = cur.fetchall()
-    conn.close()
+    with obter_conexao() as conn:
+        usuarios = conn.execute("SELECT id, nome, rgpm, patente, discord_id FROM usuarios WHERE status='APROVADO'").fetchall()
     return render_template("membros.html", usuarios=usuarios)
 
 @app.route("/perfil/<int:id>")
+@login_required
 def perfil(id):
-    if not is_approved():
-        return redirect(url_for("login"))
-
-    conn = conectar()
-    cur = conn.cursor()
-    cur.execute("SELECT * FROM usuarios WHERE id=?", (id,))
-    usuario = cur.fetchone()
-    cur.execute("SELECT * FROM advertencias WHERE usuario_id=?", (id,))
-    advertencias = cur.fetchall()
-    cur.execute("SELECT * FROM certificados WHERE usuario_id=?", (id,))
-    certificados = cur.fetchall()
-    conn.close()
+    with obter_conexao() as conn:
+        usuario = conn.execute("SELECT id, nome, rgpm, patente, status, observacao FROM usuarios WHERE id=?", (id,)).fetchone()
+        if not usuario:
+            abort(404)
+        advertencias = conn.execute("SELECT * FROM advertencias WHERE usuario_id=?", (id,)).fetchall()
+        certificados = conn.execute("SELECT * FROM certificados WHERE usuario_id=?", (id,)).fetchall()
 
     return render_template("perfil.html", usuario=usuario, advertencias=advertencias, certificados=certificados)
 
 # =========================
-# ADVERTÊNCIAS
+# MODERAÇÃO DE SOLICITAÇÕES (SÓ ADMIN)
+# =========================
+@app.route("/pendentes")
+@admin_required
+def pendentes():
+    with obter_conexao() as conn:
+        usuarios = conn.execute("SELECT id, nome, rgpm, patente, discord_id FROM usuarios WHERE status='PENDENTE'").fetchall()
+    return render_template("pendentes.html", usuarios=usuarios)
+
+@app.route("/aprovar/<int:id>", methods=["POST"])
+@admin_required
+def aprovar(id):
+    with obter_conexao() as conn:
+        conn.execute("UPDATE usuarios SET status='APROVADO' WHERE id=?", (id,))
+        conn.commit()
+    flash("Policial aprovado com sucesso!")
+    return redirect(url_for("pendentes"))
+
+@app.route("/recusar/<int:id>", methods=["POST"])
+@admin_required
+def recusar(id):
+    obs = request.form.get("observacao", "Não cumpre os requisitos").strip()
+    with obter_conexao() as conn:
+        conn.execute("UPDATE usuarios SET status='RECUSADO', observacao=? WHERE id=?", (obs, id))
+        conn.commit()
+    flash("Solicitação recusada.")
+    return redirect(url_for("pendentes"))
+
+# =========================
+# SISTEMA DE ADVERTÊNCIAS
 # =========================
 @app.route("/advertencias")
+@login_required
 def advertencias():
-    if not is_approved():
-        return redirect(url_for("login"))
-
-    conn = conectar()
-    cur = conn.cursor()
-    cur.execute("SELECT * FROM usuarios WHERE status='APROVADO'")
-    usuarios = cur.fetchall()
-    cur.execute("""
-    SELECT advertencias.*, usuarios.nome
-    FROM advertencias
-    INNER JOIN usuarios ON usuarios.id = advertencias.usuario_id
-    ORDER BY advertencias.id DESC
-    """)
-    lista = cur.fetchall()
-    conn.close()
-
+    with obter_conexao() as conn:
+        usuarios = conn.execute("SELECT id, nome FROM usuarios WHERE status='APROVADO'").fetchall()
+        lista = conn.execute("""
+            SELECT adv.*, u.nome AS nome_usuario, u.patente AS patente_usuario
+            FROM advertencias adv
+            INNER JOIN usuarios u ON u.id = adv.usuario_id
+            ORDER BY adv.id DESC
+        """).fetchall()
     return render_template("advertencias.html", usuarios=usuarios, advertencias=lista)
 
 @app.route("/aplicar_advertencia", methods=["POST"])
+@admin_required
 def aplicar_advertencia():
-    if not is_approved():
-        return redirect(url_for("login"))
-
-    usuario_id = request.form["usuario_id"]
-    motivo = request.form["motivo"]
-    aplicador = session.get("usuario", "Admin")
+    usuario_id = request.form.get("usuario_id")
+    motivo = request.form.get("motivo", "").strip()
+    aplicador = session.get("usuario_nome", "Oficial Superior")
     data = datetime.now().strftime("%d/%m/%Y %H:%M")
 
-    conn = conectar()
-    cur = conn.cursor()
-    cur.execute("INSERT INTO advertencias (usuario_id, motivo, aplicador, data) VALUES (?, ?, ?, ?)", (usuario_id, motivo, aplicador, data))
-    conn.commit()
-    conn.close()
+    if not usuario_id or not motivo:
+        flash("Preencha todos os campos da advertência!")
+        return redirect(url_for("advertencias"))
+
+    with obter_conexao() as conn:
+        conn.execute("INSERT INTO advertencias (usuario_id, motivo, aplicador, data) VALUES (?, ?, ?, ?)", 
+                     (usuario_id, motivo, aplicador, data))
+        conn.commit()
+    flash("Advertência lavrada com sucesso!")
     return redirect(url_for("advertencias"))
 
 @app.route("/remover_advertencia/<int:id>", methods=["POST"])
+@admin_required
 def remover_advertencia(id):
-    if not is_approved():
-        return redirect(url_for("login"))
-
-    conn = conectar()
-    cur = conn.cursor()
-    cur.execute("DELETE FROM advertencias WHERE id=?", (id,))
-    conn.commit()
-    conn.close()
+    with obter_conexao() as conn:
+        conn.execute("DELETE FROM advertencias WHERE id=?", (id,))
+        conn.commit()
+    flash("Advertência retirada.")
     return redirect(url_for("advertencias"))
 
 # =========================
-# CERTIFICADOS
+# SISTEMA DE CERTIFICADOS
 # =========================
 @app.route("/certificados")
+@login_required
 def certificados():
-    if not is_approved():
-        return redirect(url_for("login"))
-
-    conn = conectar()
-    cur = conn.cursor()
-    cur.execute("SELECT * FROM usuarios WHERE status='APROVADO'")
-    usuarios = cur.fetchall()
-    cur.execute("""
-    SELECT certificados.*, usuarios.nome
-    FROM certificados
-    INNER JOIN usuarios ON usuarios.id = certificados.usuario_id
-    ORDER BY certificados.id DESC
-    """)
-    lista = cur.fetchall()
-    conn.close()
-
+    with obter_conexao() as conn:
+        usuarios = conn.execute("SELECT id, nome FROM usuarios WHERE status='APROVADO'").fetchall()
+        lista = conn.execute("""
+            SELECT cert.*, u.nome AS nome_usuario
+            FROM certificados cert
+            INNER JOIN usuarios u ON u.id = cert.usuario_id
+            ORDER BY cert.id DESC
+        """).fetchall()
     return render_template("certificados.html", usuarios=usuarios, certificados=lista)
 
 @app.route("/emitir_certificado", methods=["POST"])
+@admin_required
 def emitir_certificado():
-    if not is_approved():
-        return redirect(url_for("login"))
-
-    usuario_id = request.form["usuario_id"]
-    curso = request.form["curso"]
-    assinatura = request.form["assinatura"]
+    usuario_id = request.form.get("usuario_id")
+    curso = request.form.get("curso", "").strip()
+    assinatura = request.form.get("assinatura", "").strip()
     data = datetime.now().strftime("%d/%m/%Y %H:%M")
 
-    conn = conectar()
-    cur = conn.cursor()
-    cur.execute("INSERT INTO certificados (usuario_id, curso, assinatura, data) VALUES (?, ?, ?, ?)", (usuario_id, curso, assinatura, data))
-    conn.commit()
-    conn.close()
+    if not all([usuario_id, curso, assinatura]):
+        flash("Todos os campos de emissão são obrigatórios.")
+        return redirect(url_for("certificados"))
+
+    with obter_conexao() as conn:
+        conn.execute("INSERT INTO certificados (usuario_id, curso, assinatura, data) VALUES (?, ?, ?, ?)", 
+                     (usuario_id, curso, assinatura, data))
+        conn.commit()
     return redirect(url_for("certificados"))
 
 @app.route("/remover_certificado/<int:id>", methods=["POST"])
+@admin_required
 def remover_certificado(id):
-    if not is_approved():
-        return redirect(url_for("login"))
-
-    conn = conectar()
-    cur = conn.cursor()
-    cur.execute("DELETE FROM certificados WHERE id=?", (id,))
-    conn.commit()
-    conn.close()
+    with obter_conexao() as conn:
+        conn.execute("DELETE FROM certificados WHERE id=?", (id,))
+        conn.commit()
     return redirect(url_for("certificados"))
 
 # =========================
-# CURSOS
+# GESTÃO DE CURSOS E INSCRIÇÕES
 # =========================
 @app.route("/cursos")
+@login_required
 def cursos():
-    if not is_approved():
-        return redirect(url_for("login"))
-
-    conn = conectar()
-    cur = conn.cursor()
-    cur.execute("SELECT * FROM cursos")
-    cursos_lista = cur.fetchall()
-    cur.execute("""
-    SELECT inscricoes.curso_id, usuarios.nome
-    FROM inscricoes
-    INNER JOIN usuarios ON usuarios.id = inscricoes.usuario_id
-    """)
-    inscritos = cur.fetchall()
-    conn.close()
-
+    with obter_conexao() as conn:
+        cursos_lista = conn.execute("SELECT * FROM cursos").fetchall()
+        inscritos = conn.execute("""
+            SELECT i.curso_id, u.nome AS nome_usuario, u.patente
+            FROM inscricoes i
+            INNER JOIN usuarios u ON u.id = i.usuario_id
+        """).fetchall()
     return render_template("cursos.html", cursos=cursos_lista, inscritos=inscritos)
 
 @app.route("/novo_curso")
+@admin_required
 def novo_curso():
-    if not is_admin():
-        return "Acesso negado", 403
     return render_template("criar_curso.html")
 
 @app.route("/criar_curso", methods=["POST"])
+@admin_required
 def criar_curso():
-    if not is_admin():
-        return "Acesso negado", 403
+    nome = request.form.get("nome", "").strip()
+    descricao = request.form.get("descricao", "").strip()
+    inicio = request.form.get("inicio", "").strip()
+    fim = request.form.get("fim", "").strip()
+    criador = session.get("usuario_nome", "Admin")
 
-    nome = request.form["nome"]
-    descricao = request.form["descricao"]
-    inicio = request.form["inicio"]
-    fim = request.form["fim"]
-    criador = session.get("usuario", "Admin")
+    if not nome:
+        flash("O nome do curso é estritamente obrigatório.")
+        return redirect(url_for("novo_curso"))
 
-    conn = conectar()
-    cur = conn.cursor()
-    cur.execute("INSERT INTO cursos (nome, descricao, data_inicio, data_fim, criado_por) VALUES (?, ?, ?, ?, ?)", (nome, descricao, inicio, fim, criador))
-    conn.commit()
-    conn.close()
+    with obter_conexao() as conn:
+        conn.execute("INSERT INTO cursos (nome, descricao, data_inicio, data_fim, criado_por) VALUES (?, ?, ?, ?, ?)", 
+                     (nome, descricao, inicio, fim, criador))
+        conn.commit()
     return redirect(url_for("cursos"))
 
 @app.route("/inscrever_curso/<int:id>", methods=["POST"])
+@login_required
 def inscrever_curso(id):
-    if not is_approved():
-        return redirect(url_for("login"))
-
-    user = get_user()
-    if not user:
-        return redirect(url_for("login"))
-
-    conn = conectar()
-    cur = conn.cursor()
-    cur.execute("INSERT INTO inscricoes (curso_id, usuario_id) VALUES (?, ?)", (id, user[0]))
-    conn.commit()
-    conn.close()
+    try:
+        with obter_conexao() as conn:
+            conn.execute("INSERT INTO inscricoes (curso_id, usuario_id) VALUES (?, ?)", (id, session["usuario_id"]))
+            conn.commit()
+        flash("Inscrição realizada com sucesso!")
+    except sqlite3.IntegrityError:
+        flash("Você já está inscrito neste curso.")
     return redirect(url_for("cursos"))
 
 @app.route("/encerrar_curso/<int:id>", methods=["POST"])
+@admin_required
 def encerrar_curso(id):
-    if not is_admin():
-        return "Acesso negado", 403
+    with obter_conexao() as conn:
+        curso = conn.execute("SELECT nome FROM cursos WHERE id=?", (id,)).fetchone()
+        if not curso:
+            abort(404)
+            
+        alunos = conn.execute("SELECT usuario_id FROM inscricoes WHERE curso_id=?", (id,)).fetchall()
+        
+        assinatura = f"{session.get('usuario_patente')} {session.get('usuario_nome')} - Comando Geral"
+        data = datetime.now().strftime("%d/%m/%Y %H:%M")
 
-    conn = conectar()
-    cur = conn.cursor()
-    cur.execute("SELECT nome FROM cursos WHERE id=?", (id,))
-    curso = cur.fetchone()
-    cur.execute("SELECT usuario_id FROM inscricoes WHERE curso_id=?", (id,))
-    alunos = cur.fetchall()
+        for aluno in alunos:
+            conn.execute("INSERT INTO certificados (usuario_id, curso, assinatura, data) VALUES (?, ?, ?, ?)", 
+                         (aluno["usuario_id"], curso["nome"], assinatura, data))
+            
+        # Deleta as inscrições do curso encerrado automaticamente
+        conn.execute("DELETE FROM inscricoes WHERE curso_id=?", (id,))
+        conn.commit()
 
-    if not curso:
-        conn.close()
-        return "Curso não encontrado", 404
-
-    assinatura = "Tenente Coronel Oswaldo Santos - RGPM64832"
-    data = datetime.now().strftime("%d/%m/%Y %H:%M")
-
-    for a in alunos:
-        cur.execute("INSERT INTO certificados (usuario_id, curso, assinatura, data) VALUES (?, ?, ?, ?)", (a[0], curso[0], assinatura, data))
-
-    conn.commit()
-    conn.close()
+    flash(f"Curso '{curso['nome']}' finalizado. Certificados gerados aos formandos.")
     return redirect(url_for("cursos"))
 
 if __name__ == "__main__":
