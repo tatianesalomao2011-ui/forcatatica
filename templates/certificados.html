@@ -1,33 +1,79 @@
-@app.route("/certificados")
-def certificados():
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Certificados</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
 
-    conn = conectar()
-    cur = conn.cursor()
+<div class="sidebar">
+    <div class="sidebar-header">
+        <h2>FORÇA TÁTICA</h2>
+    </div>
+    <ul>
+        <li><a href="/dashboard">Dashboard</a></li>
+        <li><a href="/membros">Membros</a></li>
+        <li><a href="/advertencias">Advertências</a></li>
+        <li><a href="/certificados">Certificados</a></li>
+        <li><a href="/cursos">Cursos</a></li>
+        <li><a href="/pendentes">Pendentes</a></li>
+        <li><a href="/logout">Sair</a></li>
+    </ul>
+</div>
 
-    cur.execute("""
-    SELECT *
-    FROM usuarios
-    WHERE status='APROVADO'
-    """)
+<div class="main-content">
+    <h1>Emitir Certificado</h1>
+    <form action="/emitir_certificado" method="POST">
+        <div class="form-card">
+            <label>Membro</label>
+            <select name="usuario_id" required>
+                {% for usuario in usuarios %}
+                <option value="{{ usuario[0] }}">{{ usuario[1] }} - {{ usuario[2] }}</option>
+                {% endfor %}
+            </select>
 
-    usuarios = cur.fetchall()
+            <label>Nome do Curso</label>
+            <input type="text" name="curso" required placeholder="Ex: Patrulhamento Tático Móvel">
 
-    cur.execute("""
-    SELECT
-        certificados.*,
-        usuarios.nome
-    FROM certificados
-    INNER JOIN usuarios
-    ON usuarios.id = certificados.usuario_id
-    ORDER BY certificados.id DESC
-    """)
+            <label>Assinatura de Validação</label>
+            <input type="text" name="assinatura" required placeholder="Ex: Tenente Coronel Oswaldo Santos - RGPM64832">
 
-    lista = cur.fetchall()
+            <button class="btn-aprovar" type="submit">Emitir Certificado</button>
+        </div>
+    </form>
 
-    conn.close()
+    <h2>Certificados Emitidos</h2>
+    <table class="tabela">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Policial</th>
+                <th>Curso</th>
+                <th>Assinatura</th>
+                <th>Data</th>
+                <th>Ações</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for c in certificados %}
+            <tr>
+                <td>{{ c[0] }}</td>
+                <td>{{ c[5] }}</td>
+                <td>{{ c[2] }}</td>
+                <td>{{ c[3] }}</td>
+                <td>{{ c[4] }}</td>
+                <td>
+                    <form action="/remover_certificado/{{ c[0] }}" method="POST">
+                        <button class="btn-recusar" type="submit">Remover</button>
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
 
-    return render_template(
-        "certificados.html",
-        usuarios=usuarios,
-        certificados=lista
-    )
+</body>
+</html>
